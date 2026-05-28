@@ -81,14 +81,64 @@ html.anim [data-anim] { opacity: 0; }
   transition: opacity 1s ease, visibility 1s ease;
 }
 .abertura.fechando { opacity: 0; visibility: hidden; }
-.abertura__conteudo { text-align: center; }
+.abertura__conteudo { text-align: center; position: relative; z-index: 3; }
+
+/* ----- estrelinhas cintilando ----- */
+.abertura__sparkles { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 1; }
+.abertura__sparkles span { position: absolute; width: 3px; height: 3px; border-radius: 50%;
+  background: #fff; box-shadow: 0 0 8px 1px rgba(255,143,163,.85);
+  animation: twinkle 3s ease-in-out infinite; will-change: opacity, transform; }
+@keyframes twinkle { 0%, 100% { opacity: 0; transform: scale(.4); } 50% { opacity: 1; transform: scale(1.2); } }
+
+/* ----- mini corações subindo no fundo ----- */
+.abertura__voa { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 1; }
+.voa { position: absolute; bottom: -20px; opacity: 0; font-size: 1.4rem;
+  animation: voaSobe 11s linear infinite; will-change: transform, opacity; }
+@keyframes voaSobe {
+  0% { transform: translate3d(0, 0, 0) scale(.6) rotate(-10deg); opacity: 0; }
+  10% { opacity: .85; }
+  90% { opacity: .85; }
+  100% { transform: translate3d(30px, -110vh, 0) scale(1.15) rotate(20deg); opacity: 0; }
+}
+.voa.v1 { left: 10%; animation-delay: 0s; }
+.voa.v2 { left: 28%; animation-delay: 2.2s; font-size: 1.1rem; }
+.voa.v3 { left: 70%; animation-delay: 1s; font-size: 1.5rem; }
+.voa.v4 { left: 86%; animation-delay: 3.8s; font-size: 1.1rem; }
+.voa.v5 { left: 48%; animation-delay: 5.6s; font-size: 1.3rem; }
+.voa.v6 { left: 6%; animation-delay: 4.7s; font-size: 1.2rem; }
+
+/* ----- pre-texto "para Stefhane," ----- */
+.abertura__pre { font-family: var(--f-script); font-size: clamp(1.5rem, 4vw, 2.2rem);
+  color: var(--rosa-claro); margin-bottom: 8px; opacity: .9; letter-spacing: 1px; }
+
+/* ----- caixa central que segura o coração + halo + anéis ----- */
+.abertura__centro { position: relative; width: clamp(260px, 60vw, 360px); height: clamp(260px, 60vw, 360px);
+  margin: 0 auto 14px; display: grid; place-items: center; }
+.halo-aurora { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
+  width: 100%; height: 100%; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, rgba(255,77,109,.6), rgba(255,77,109,0) 65%);
+  filter: blur(20px); animation: pulsaHalo 5s ease-in-out infinite; will-change: transform, opacity; }
+@keyframes pulsaHalo {
+  0%, 100% { opacity: .55; transform: translate(-50%,-50%) scale(1); }
+  50% { opacity: 1; transform: translate(-50%,-50%) scale(1.12); }
+}
+.halo-ring { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
+  width: 70%; height: 70%; border-radius: 50%; pointer-events: none;
+  background: conic-gradient(from 0deg, transparent 0%, rgba(255,143,163,.65) 50%, transparent 100%);
+  -webkit-mask: radial-gradient(transparent 56%, #000 58%); mask: radial-gradient(transparent 56%, #000 58%);
+  animation: giraRing 9s linear infinite; will-change: transform; }
+.halo-ring.r2 { width: 92%; height: 92%;
+  background: conic-gradient(from 180deg, transparent 0%, rgba(255,77,109,.5) 50%, transparent 100%);
+  animation-duration: 16s; animation-direction: reverse; opacity: .7; }
+@keyframes giraRing { to { transform: translate(-50%,-50%) rotate(360deg); } }
+
 .abertura__coracao {
-  position: relative; width: 140px; height: 140px; margin: 0 auto 30px;
+  position: relative; z-index: 2; width: 140px; height: 140px;
   cursor: pointer; animation: bater 1.4s ease-in-out infinite;
-  filter: drop-shadow(0 0 34px rgba(255,77,109,.85));
+  filter: drop-shadow(0 10px 22px rgba(0,0,0,.35));
   transition: filter .3s;
 }
-.abertura__coracao:hover { filter: drop-shadow(0 0 52px rgba(255,77,109,1)); }
+.abertura__coracao:hover { filter: drop-shadow(0 12px 28px rgba(255,77,109,.7)); }
 .coracao-svg { width: 100%; height: 100%; display: block; overflow: visible; }
 /* imagem de coração opcional (se o usuário fornecer uma) */
 .coracao-img { width: 100%; height: 100%; object-fit: contain; display: block;
@@ -114,10 +164,8 @@ html.anim [data-anim] { opacity: 0; }
 @keyframes brilha { to { background-position: 200% center; } }
 .abertura__sub { color: var(--texto-suave); margin-top: 8px; font-size: .95rem; }
 
-/* ----- camada da explosão de corações (transição de abertura) ----- */
-.explosao { position: fixed; inset: 0; z-index: 10060; pointer-events: none; overflow: hidden; }
-.exp-coracao { position: absolute; top: 0; left: 0; line-height: 1; user-select: none; will-change: transform, opacity;
-  filter: drop-shadow(0 6px 16px rgba(255,77,109,.55)); }
+/* ----- camada do canvas da explosão de corações (transição da abertura) ----- */
+.explosao-canvas { position: fixed; inset: 0; z-index: 10060; pointer-events: none; }
 
 /* ======================== CURSOR ============================ */
 .cursor { position: fixed; top:0; left:0; width: 10px; height: 10px; border-radius: 50%;

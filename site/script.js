@@ -66,29 +66,29 @@ if (!temGsap) document.documentElement.classList.remove('anim');
     }
   }
 
+  // gera estrelinhas cintilando espalhadas pela tela inicial
+  const sparkCont = document.getElementById('aberturaSparkles');
+  if (sparkCont) {
+    const n = innerWidth < 600 ? 22 : 34;
+    for (let i = 0; i < n; i++) {
+      const s = document.createElement('span');
+      s.style.left = (Math.random() * 100) + '%';
+      s.style.top = (Math.random() * 100) + '%';
+      const sz = 2 + Math.random() * 3;
+      s.style.width = sz + 'px'; s.style.height = sz + 'px';
+      s.style.animationDelay = (Math.random() * 3) + 's';
+      s.style.animationDuration = (2 + Math.random() * 2.5) + 's';
+      sparkCont.appendChild(s);
+    }
+  }
+
   function finalizar() {
     document.body.style.overflow = '';
     introHero();
     if (CONFIG.temMusica) tentarTocarMusica();
   }
 
-  // cria um coração da explosão (imagem se houver, senão emoji)
-  function novoCoracao(tamanho) {
-    const emojis = ['💗', '❤️', '💕', '💖', '🌹', '💝'];
-    let el;
-    if (CONFIG.imagemCoracao) {
-      el = document.createElement('img');
-      el.src = CONFIG.imagemCoracao; el.alt = '';
-      el.style.width = tamanho + 'px'; el.style.height = 'auto';
-    } else {
-      el = document.createElement('span');
-      el.textContent = emojis[(Math.random() * emojis.length) | 0];
-      el.style.fontSize = tamanho + 'px';
-    }
-    el.className = 'exp-coracao';
-    return el;
-  }
-
+  // === Canvas (uma camada só, leve mesmo com 100+ corações) =====
   function abrir() {
     if (abrindo) return; abrindo = true;
 
@@ -96,70 +96,115 @@ if (!temGsap) document.documentElement.classList.remove('anim');
     const ox = r.left + r.width / 2;
     const oy = r.top + r.height / 2;
 
-    if (semMov) { tela.remove(); finalizar(); return; } // sem animação
-
     botao.style.animation = 'none';
-    // 1) o coração incha e some (explode)
+    // o coração central incha e some
     botao.animate(
       [{ transform: 'scale(1)', opacity: 1 },
        { transform: 'scale(1.5)', opacity: 1, offset: 0.45 },
        { transform: 'scale(0)', opacity: 0 }],
       { duration: 430, easing: 'cubic-bezier(.6,0,.85,.25)', fill: 'forwards' });
-    chuvaDeCoracoes(30, ox, oy); // estourinho radial extra
 
-    // 2) monta a grade de corações que vai cobrir a tela
-    const layer = document.createElement('div');
-    layer.className = 'explosao';
-    document.body.appendChild(layer);
+    // canvas em tela cheia (hi-DPI)
+    const canvas = document.createElement('canvas');
+    canvas.className = 'explosao-canvas';
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = innerWidth * dpr;
+    canvas.height = innerHeight * dpr;
+    canvas.style.width = innerWidth + 'px';
+    canvas.style.height = innerHeight + 'px';
+    document.body.appendChild(canvas);
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
 
-    const cols = innerWidth < 600 ? 6 : 11;
+    // gera a "grade" de corações que vai cobrir a tela
+    const cols = innerWidth < 600 ? 7 : 12;
     const cell = innerWidth / cols;
     const rows = Math.ceil(innerHeight / cell) + 1;
+    const emojis = ['💗', '❤️', '💕', '💖', '🌹', '💝'];
     const cx0 = (cols - 1) / 2, cy0 = (rows - 1) / 2;
-    const itens = [];
-    for (let ry = 0; ry < rows; ry++) {
-      for (let cx = 0; cx < cols; cx++) {
-        const tam = cell * (0.95 + Math.random() * 0.4);
-        const el = novoCoracao(tam);
-        layer.appendChild(el);
-        itens.push({
-          el,
-          tx: cx * cell + cell / 2 + (Math.random() * 26 - 13),
-          ty: ry * cell + cell / 2 + (Math.random() * 26 - 13),
-          rot: Math.random() * 180 - 90,
-          dist: Math.hypot(cx - cx0, ry - cy0),
-        });
-      }
+    let maxDist = 0;
+    const hearts = [];
+    for (let ry = 0; ry < rows; ry++) for (let cx = 0; cx < cols; cx++) {
+      const dist = Math.hypot(cx - cx0, ry - cy0);
+      if (dist > maxDist) maxDist = dist;
+      hearts.push({
+        char: emojis[(Math.random() * emojis.length) | 0],
+        tx: cx * cell + cell / 2 + (Math.random() * 26 - 13),
+        ty: ry * cell + cell / 2 + (Math.random() * 26 - 13),
+        size: cell * (0.85 + Math.random() * 0.25),
+        rot0: Math.random() * 180 - 90,
+        dist,
+        fallDelay: Math.random() * 520,
+        driftX: Math.random() * 180 - 90,
+      });
     }
-    const maxDist = Math.max(...itens.map((i) => i.dist)) || 1;
+    hearts.forEach((h) => { h.explodeDelay = 170 + (h.dist / (maxDist || 1)) * 250; });
 
-    // 3) EXPLOSÃO: do centro pra cobrir a tela (stagger radial)
-    itens.forEach((it) => {
-      const atraso = 170 + (it.dist / maxDist) * 250;
-      it.el.animate(
-        [{ transform: `translate(${ox}px,${oy}px) translate(-50%,-50%) scale(0) rotate(${it.rot}deg)`, opacity: 1 },
-         { transform: `translate(${it.tx}px,${it.ty}px) translate(-50%,-50%) scale(1) rotate(${it.rot}deg)`, opacity: 1 }],
-        { duration: 480, delay: atraso, easing: 'cubic-bezier(.2,.8,.3,1.25)', fill: 'forwards' });
-    });
+    const tCobrir = 170 + 250 + 480;          // ~900ms
+    const fallStart = tCobrir + 120;          // ~1020ms
+    const totalEnd = fallStart + 1300 + 520 + 100;  // ~2940ms
 
-    const tCobrir = 170 + 250 + 480; // ~900ms até cobrir tudo
+    // imagem custom (se o usuário forneceu uma)
+    let img = null;
+    if (CONFIG.imagemCoracao) { img = new Image(); img.src = CONFIG.imagemCoracao; }
 
-    // 4) some o fundo da abertura (revela o site) e o site começa a animar
+    // some o fundo da abertura no momento certo (revela o site bonito atrás)
     setTimeout(() => {
       tela.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 450, fill: 'forwards' })
         .onfinish = () => { tela.remove(); finalizar(); };
     }, tCobrir - 130);
 
-    // 5) os corações CAEM (gravidade), revelando o site bonito atrás
-    setTimeout(() => {
-      itens.forEach((it) => {
-        it.el.animate(
-          [{ transform: `translate(${it.tx}px,${it.ty}px) translate(-50%,-50%) scale(1) rotate(${it.rot}deg)`, opacity: 1 },
-           { transform: `translate(${it.tx + (Math.random() * 180 - 90)}px,${it.ty + innerHeight + 280}px) translate(-50%,-50%) scale(1) rotate(${it.rot + 160}deg)`, opacity: 1 }],
-          { duration: 1300, delay: Math.random() * 520, easing: 'cubic-bezier(.5,0,.9,.55)', fill: 'forwards' });
-      });
-      setTimeout(() => layer.remove(), 1300 + 600);
-    }, tCobrir + 120);
+    // easings
+    const backOut = (t) => { const s = 1.5; return 1 + (s + 1) * Math.pow(t - 1, 3) + s * Math.pow(t - 1, 2); };
+    const easeIn = (t) => t * t * t;
+
+    let t0 = null;
+    function frame(ts) {
+      if (t0 == null) t0 = ts;
+      const t = ts - t0;
+      ctx.clearRect(0, 0, innerWidth, innerHeight);
+
+      for (const h of hearts) {
+        const eStart = h.explodeDelay;
+        const eEnd = eStart + 480;
+        const fStart = fallStart + h.fallDelay;
+        const fEnd = fStart + 1300;
+        let x, y, scale, rot;
+        if (t < eStart) { x = ox; y = oy; scale = 0; rot = h.rot0; }
+        else if (t < eEnd) {
+          const p = (t - eStart) / 480, e = backOut(p);
+          x = ox + (h.tx - ox) * e;
+          y = oy + (h.ty - oy) * e;
+          scale = e; rot = h.rot0;
+        }
+        else if (t < fStart) { x = h.tx; y = h.ty; scale = 1; rot = h.rot0; }
+        else if (t < fEnd) {
+          const p = (t - fStart) / 1300, e = easeIn(p);
+          x = h.tx + h.driftX * e;
+          y = h.ty + (innerHeight + 280) * e;
+          scale = 1; rot = h.rot0 + 160 * e;
+        }
+        else continue;
+        if (scale <= 0) continue;
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(rot * Math.PI / 180);
+        ctx.scale(scale, scale);
+        if (img && img.complete && img.naturalWidth > 0) {
+          const s = h.size; ctx.drawImage(img, -s / 2, -s / 2, s, s);
+        } else {
+          ctx.font = `${h.size}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
+          ctx.fillText(h.char, 0, 0);
+        }
+        ctx.restore();
+      }
+
+      if (t < totalEnd) requestAnimationFrame(frame);
+      else canvas.remove();
+    }
+    requestAnimationFrame(frame);
   }
 
   tela.addEventListener('click', abrir);       // clique em qualquer lugar abre
@@ -237,7 +282,7 @@ document.addEventListener('DOMContentLoaded', revealsNoScroll);
   const cores = ['#ff4d6d', '#ff8fa3', '#c9184a', '#ff6b88', '#ffb3c1'];
   const tam = () => { w = canvas.width = innerWidth; h = canvas.height = innerHeight; };
   tam(); addEventListener('resize', tam);
-  const QTD = innerWidth < 600 ? 14 : 30;
+  const QTD = innerWidth < 600 ? 10 : 20;
   for (let i = 0; i < QTD; i++) ps.push(nova(true));
   function nova(ini) {
     return { x: Math.random()*w, y: ini ? Math.random()*h : -20, r: 4+Math.random()*7,
