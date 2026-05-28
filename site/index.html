@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <title>Para você, Stefhane 💕</title>
+  <meta name="description" content="Um site feito com amor." />
+
+  <!-- Fontes (Google Fonts). Se estiver sem internet, cai pras fontes do sistema. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ======================================================= -->
+  <!-- ABERTURA — ela toca pra "abrir" a surpresa               -->
+  <!-- ======================================================= -->
+  <div class="abertura" id="abertura">
+    <div class="abertura__conteudo">
+      <div class="abertura__coracao" id="botaoAbrir" role="button" tabindex="0" aria-label="Abrir a surpresa">
+        <svg viewBox="0 0 32 29.6" class="coracao-svg">
+          <path d="M23.6,0c-2.7,0-5.2,1.3-6.8,3.4C15.2,1.3,12.7,0,10,0C5.6,0,2,3.6,2,8 c0,8.2,14,18.6,14,18.6S30,16.2,30,8C30,3.6,26.4,0,22,0H23.6z"/>
+        </svg>
+        <span class="abertura__pulso"></span>
+      </div>
+      <p class="abertura__texto">toque pra abrir</p>
+      <p class="abertura__sub">tem uma surpresa aqui dentro 💌</p>
+    </div>
+  </div>
+
+  <!-- Canvas das pétalas caindo (fundo) -->
+  <canvas id="petalas" class="petalas" aria-hidden="true"></canvas>
+
+  <!-- Cursor customizado (só desktop) -->
+  <div class="cursor" id="cursor" aria-hidden="true"></div>
+
+  <!-- Botão de música (opcional — veja fotos/LEIA-ME) -->
+  <button class="musica" id="botaoMusica" aria-label="Tocar música" title="Música">
+    <span class="musica__icone">♪</span>
+  </button>
+  <audio id="audioFundo" loop preload="none">
+    <!-- Pra ativar a música: coloque um arquivo em site/musica.mp3 e descomente a linha abaixo -->
+    <!-- <source src="musica.mp3" type="audio/mpeg" /> -->
+  </audio>
+
+  <main id="conteudo" class="conteudo">
+
+    <!-- =========================== HERO =========================== -->
+    <section class="hero" id="hero">
+      <div class="hero__brilho" data-parallax="0.3"></div>
+      <div class="hero__inner">
+        <p class="hero__pre reveal">com amor, feito com tempo</p>
+        <h1 class="hero__titulo">
+          <span class="reveal" style="--d:.1s">Para você,</span>
+          <span class="hero__nome reveal" style="--d:.35s">Stefhane</span>
+        </h1>
+        <!-- ✏️ Edite essa frase à vontade -->
+        <p class="hero__frase reveal" style="--d:.6s">
+          Eu não sou bom com surpresas grandes, então fiz uma do meu jeito —
+          uma página só sua, pra você guardar.
+        </p>
+        <div class="hero__seta reveal" style="--d:.9s" aria-hidden="true">
+          <span>role pra baixo</span>
+          <div class="hero__chevron"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================== COMO COMEÇOU ======================== -->
+    <section class="bloco bloco--historia" id="historia">
+      <div class="bloco__inner">
+        <h2 class="titulo-secao reveal">Como tudo começou</h2>
+        <!-- ✏️ Conte do seu jeito. Esses textos são rascunhos pra você ajustar. -->
+        <p class="texto reveal">
+          Há uns cinco meses eu mandei uma mensagem. Só uma. E a gente não
+          parou mais de conversar — nenhum dia desde então.
+        </p>
+        <p class="texto reveal">
+          Do nada eu já tinha apelido pra você, e você pra mim. Já falava que
+          te amava. E pensei: se já é assim agora, imagina o resto.
+        </p>
+        <blockquote class="citacao reveal">
+          <span id="typewriter" class="typewriter"></span><span class="cursor-pisca">|</span>
+        </blockquote>
+        <p class="texto texto--mini reveal">— foi isso que eu te mandei um dia, e é isso que eu sinto todo dia.</p>
+      </div>
+    </section>
+
+    <!-- ===================== CONTADOR AO VIVO ===================== -->
+    <section class="bloco bloco--contador" id="contador">
+      <div class="bloco__inner">
+        <h2 class="titulo-secao reveal">A gente conversa há</h2>
+        <div class="contador reveal" id="contadorTempo" aria-live="polite">
+          <div class="contador__item"><span class="contador__num" data-unit="dias">0</span><span class="contador__rot">dias</span></div>
+          <div class="contador__item"><span class="contador__num" data-unit="horas">0</span><span class="contador__rot">horas</span></div>
+          <div class="contador__item"><span class="contador__num" data-unit="minutos">0</span><span class="contador__rot">minutos</span></div>
+          <div class="contador__item"><span class="contador__num" data-unit="segundos">0</span><span class="contador__rot">segundos</span></div>
+        </div>
+        <p class="texto texto--mini reveal">…e contando. 💕</p>
+      </div>
+    </section>
+
+    <!-- ======================== GALERIA ========================== -->
+    <section class="bloco bloco--galeria" id="galeria">
+      <div class="bloco__inner">
+        <h2 class="titulo-secao reveal">A gente, em fotos</h2>
+        <p class="texto reveal">Cada uma com um pedacinho do que eu penso quando olho.</p>
+        <div class="galeria" id="gridGaleria">
+          <!-- as fotos entram aqui via JS (script.js → CONFIG.fotos) -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== O QUE EU AMO ========================= -->
+    <section class="bloco bloco--amo" id="amo">
+      <div class="bloco__inner">
+        <h2 class="titulo-secao reveal">O que eu amo em você</h2>
+        <div class="cards">
+          <!-- ✏️ edite/adicione quantos quiser -->
+          <article class="card reveal">
+            <span class="card__emoji">😄</span>
+            <h3>Sua gargalhada</h3>
+            <p>Alta, escandalosa, do nada. Você ri de tudo e eu acho a coisa mais linda do mundo.</p>
+          </article>
+          <article class="card reveal" style="--d:.1s">
+            <span class="card__emoji">🤍</span>
+            <h3>Seu coração</h3>
+            <p>Você se importa com todo mundo de um jeito que é raro de ver. É isso que te faz única.</p>
+          </article>
+          <article class="card reveal" style="--d:.2s">
+            <span class="card__emoji">🌷</span>
+            <h3>Sua leveza</h3>
+            <p>Você quer ser feliz e leve — e arrasta todo mundo junto. Perto de você tudo fica mais fácil.</p>
+          </article>
+          <article class="card reveal" style="--d:.3s">
+            <span class="card__emoji">🧠</span>
+            <h3>A gente pensa igual</h3>
+            <p>Mesma visão do mundo, mesmas opiniões. Conversar com você é conversar comigo, só que melhor.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================== MENSAGEM FINAL ===================== -->
+    <section class="bloco bloco--final" id="final">
+      <div class="bloco__inner">
+        <h2 class="titulo-secao reveal">Pra terminar (mas não acabar)</h2>
+        <!-- ✏️ a parte mais sua. Reescreve do teu jeito. -->
+        <p class="texto reveal">
+          Estou sempre rezando e pedindo a Deus pra cuidar de você. Quero te
+          ajudar sempre — e mesmo quando você não precisar, eu vou estar aqui.
+        </p>
+        <p class="texto reveal">
+          Esse site é pequeno perto do que eu sinto, mas é a minha forma de
+          dizer: você é especial demais, e eu tenho sorte demais.
+        </p>
+        <button class="botao-surpresa reveal" id="botaoConfete">tem mais uma coisa…</button>
+        <p class="assinatura reveal" id="assinatura" hidden>
+          com todo o meu amor,<br />— seu 💍
+        </p>
+      </div>
+    </section>
+
+    <footer class="rodape">
+      <p>feito à mão, pra Stefhane • <span id="ano"></span></p>
+    </footer>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

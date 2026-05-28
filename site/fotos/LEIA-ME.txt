@@ -1,0 +1,29 @@
+COMO COLOCAR AS FOTOS
+=====================
+
+1. Jogue suas fotos AQUI dentro desta pasta (site/fotos/).
+
+2. Renomeie pra: foto1.jpg, foto2.jpg, foto3.jpg ... (ou .png)
+   — é o que o site procura por padrão.
+
+3. Se quiser nomes diferentes ou mais/menos fotos, abra o arquivo
+   site/script.js e edite a lista CONFIG.fotos (lá no topo, bem fácil):
+
+       fotos: [
+         { arquivo: 'fotos/o-nome-que-voce-quiser.jpg', legenda: 'seu textinho fofo' },
+         ...
+       ]
+
+4. A "legenda" é o textinho que aparece quando ela passa o dedo/mouse
+   na foto. Capricha nos teus. 💕
+
+Dica: fotos em pé (retrato) ficam mais bonitas na galeria.
+Enquanto não tiver foto, aparece um espacinho rosa marcando o lugar.
+
+MÚSICA (opcional)
+=================
+Quer música de fundo?
+1. Coloque um arquivo chamado  musica.mp3  na pasta  site/
+2. No arquivo site/index.html, ache a linha comentada com <source ...>
+   e tire o <!-- --> de volta dela.
+3. No site/script.js, mude  temMusica: false  para  temMusica: true
