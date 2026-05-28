@@ -83,20 +83,39 @@ html.anim [data-anim] { opacity: 0; }
 .abertura.fechando { opacity: 0; visibility: hidden; }
 .abertura__conteudo { text-align: center; }
 .abertura__coracao {
-  position: relative; width: 130px; height: 130px; margin: 0 auto 28px;
+  position: relative; width: 140px; height: 140px; margin: 0 auto 30px;
   cursor: pointer; animation: bater 1.4s ease-in-out infinite;
-  filter: drop-shadow(0 0 30px rgba(255,77,109,.8));
+  filter: drop-shadow(0 0 34px rgba(255,77,109,.85));
+  transition: filter .3s;
 }
-.coracao-svg { width: 100%; height: 100%; fill: var(--rosa); }
+.abertura__coracao:hover { filter: drop-shadow(0 0 52px rgba(255,77,109,1)); }
+.coracao-svg { width: 100%; height: 100%; display: block; }
+.coracao-svg path { fill: url(#gradCor); }
 .abertura__anel, .abertura__anel--2 {
-  position: absolute; inset: 0; border-radius: 50%;
+  position: absolute; inset: 8px; border-radius: 50%;
   box-shadow: 0 0 0 0 rgba(255,77,109,.5); animation: anel 1.8s ease-out infinite;
 }
 .abertura__anel--2 { animation-delay: .9s; }
+.abertura__faisca { position: absolute; font-size: 1.3rem; pointer-events: none; z-index: 4;
+  filter: drop-shadow(0 0 8px rgba(255,143,163,.9)); }
+.abertura__faisca.f1 { top: -8px; left: -10px; animation: cintila 2.2s ease-in-out infinite; }
+.abertura__faisca.f2 { top: 4px; right: -16px; animation: cintila 2.8s ease-in-out infinite .4s; }
+.abertura__faisca.f3 { bottom: 6px; left: -18px; animation: cintila 2.5s ease-in-out infinite .8s; }
+.abertura__faisca.f4 { bottom: -6px; right: -6px; animation: cintila 3s ease-in-out infinite .2s; }
+@keyframes cintila { 0%,100%{ transform: scale(.6) rotate(0); opacity: .35 } 50%{ transform: scale(1.15) rotate(18deg); opacity: 1 } }
 @keyframes anel { 0%{box-shadow:0 0 0 0 rgba(255,77,109,.5)} 100%{box-shadow:0 0 0 70px rgba(255,77,109,0)} }
 @keyframes bater { 0%,100%{transform:scale(1)} 15%{transform:scale(1.18)} 30%{transform:scale(1)} 45%{transform:scale(1.12)} }
-.abertura__texto { font-family: var(--f-script); font-size: clamp(2rem,6vw,3rem); color: var(--rosa-claro); }
-.abertura__sub { color: var(--texto-suave); margin-top: 6px; font-size: .95rem; }
+.abertura__texto { font-family: var(--f-script); font-size: clamp(2.2rem,6vw,3.2rem); font-weight: 700;
+  background: linear-gradient(90deg, #ff8fa3, #fff0f3 45%, #ff4d6d 70%, #ff8fa3);
+  background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: brilha 3.5s linear infinite; }
+@keyframes brilha { to { background-position: 200% center; } }
+.abertura__sub { color: var(--texto-suave); margin-top: 8px; font-size: .95rem; }
+
+/* ----- camada da explosão de corações (transição de abertura) ----- */
+.explosao { position: fixed; inset: 0; z-index: 10060; pointer-events: none; overflow: hidden; }
+.exp-coracao { position: absolute; top: 0; left: 0; line-height: 1; user-select: none; will-change: transform, opacity;
+  filter: drop-shadow(0 6px 16px rgba(255,77,109,.55)); }
 
 /* ======================== CURSOR ============================ */
 .cursor { position: fixed; top:0; left:0; width: 10px; height: 10px; border-radius: 50%;
