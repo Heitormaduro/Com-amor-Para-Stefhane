@@ -33,7 +33,9 @@ const CONFIG = {
 };
 /* ====================== fim dos ajustes ===================== */
 
-const semMov  = matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Animações SEMPRE ligadas — o site é uma surpresa, a animação é o ponto.
+// (ignoramos o "reduzir movimento" do sistema de propósito.)
+const semMov  = false;
 const ehTouch = matchMedia('(hover: none), (pointer: coarse)').matches;
 const temGsap = typeof window.gsap !== 'undefined';
 

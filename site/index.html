@@ -7,12 +7,8 @@
   <meta name="description" content="Um site feito com amor." />
   <meta name="theme-color" content="#1a0509" />
 
-  <!-- esconde os elementos animados cedo (o JS revela depois). Se for "menos movimento", não esconde. -->
-  <script>
-    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      document.documentElement.classList.add('anim');
-    }
-  </script>
+  <!-- esconde os elementos animados cedo (o JS revela depois com animação) -->
+  <script>document.documentElement.classList.add('anim');</script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

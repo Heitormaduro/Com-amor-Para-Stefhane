@@ -304,10 +304,5 @@ html.anim [data-anim] { opacity: 0; }
 /* ===================== CORAÇÃO FLUTUANTE ==================== */
 .coracao-flutua { position: fixed; font-size: 1.4rem; pointer-events: none; z-index: 9500; user-select: none; will-change: transform, opacity; }
 
-/* =================== MENOS MOVIMENTO (a11y) ================ */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important;
-    transition-duration: .001ms !important; scroll-behavior: auto !important; }
-  html.anim [data-anim] { opacity: 1 !important; }
-  body { cursor: auto; } .cursor, .cursor-glow, .petalas, .bg__orb { display: none; }
-}
+/* Observação: as animações ficam SEMPRE ligadas (decisão do projeto, pra a
+   surpresa funcionar mesmo com "reduzir movimento" ativado no sistema). */
