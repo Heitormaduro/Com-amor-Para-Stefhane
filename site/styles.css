@@ -167,6 +167,12 @@ html.anim [data-anim] { opacity: 0; }
 /* ----- camada do canvas da explosão de corações (transição da abertura) ----- */
 .explosao-canvas { position: fixed; inset: 0; z-index: 10060; pointer-events: none; }
 
+/* durante a transição: desliga efeitos pesados de fundo pra ganhar fps */
+body.transicao .bg__orb,
+body.transicao .petalas { display: none; }
+body.transicao .halo-aurora,
+body.transicao .halo-ring { animation-play-state: paused; }
+
 /* ======================== CURSOR ============================ */
 .cursor { position: fixed; top:0; left:0; width: 10px; height: 10px; border-radius: 50%;
   background: var(--rosa); pointer-events: none; z-index: 10000;
