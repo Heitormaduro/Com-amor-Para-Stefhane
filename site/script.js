@@ -7,12 +7,12 @@
    ========================================================== */
 const CONFIG = {
   // 📅 Data e hora (aproximada) da PRIMEIRA mensagem que você mandou pra ela.
-  //    Formato: 'ANO-MÊS-DIA HH:MM'. Troque pela data real!
-  primeiraMensagem: '2025-12-27 20:00',
+  //    Formato: 'ANO-MÊS-DIA HH:MM'. Estimado pelo foguinho do TikTok (188 dias
+  //    + ~1 semana). Se souber a data certa, é só trocar aqui.
+  primeiraMensagem: '2025-11-13 20:00',
 
-  // 🎵 Música de fundo? Coloque um arquivo em site/musica.mp3,
-  //    descomente a tag <source> no index.html, e deixe isto como true.
-  temMusica: false,
+  // 🎵 Música de fundo? Coloque o arquivo em site/musica.mp3 (já está ativado).
+  temMusica: true,
 
   // 📸 Suas fotos. Coloque os arquivos na pasta site/fotos/ e liste aqui.
   //    'legenda' é o textinho fofo que aparece ao passar o mouse.
