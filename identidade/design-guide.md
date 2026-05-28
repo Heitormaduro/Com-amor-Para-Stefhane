@@ -9,20 +9,24 @@
 ## Cores
 
 Paleta inspirada num **buquê de lírios cor-de-rosa e vermelho** (buquê que
-ela adora).
+ela adora), num **tema dark premium** (fundo vinho/carmim profundo, não preto),
+com rosa e vermelho dominando. Inspiração visual: print de UI dark romântica
+que o Heitor mandou (vidro/glassmorphism, brilhos, botões em degradê).
 
-- **Fundo principal:** rosa bem suave / off-white quente (ex: `#FFF5F7`)
+- **Fundo (escuro):** vinho profundo → carmim (ex: `#21060f` / `#3a0a1c` / `#55102b`)
 
-- **Cor de destaque / CTA:** vermelho romântico (ex: `#E63956`)
+- **Cor de destaque / CTA:** rosa→vermelho em degradê (ex: `#ff4d6d` → `#e0163f`)
 
-- **Texto principal:** vinho/bordô escuro pra contraste suave (ex: `#5C1A2B`)
+- **Rosa claro (brilhos, nome dela):** `#ff8fa3`
 
-- **Fundo alternativo / cards:** rosa claro (ex: `#FFE0E9`)
+- **Texto principal:** branco rosado (`#fff0f3`); secundário translúcido
 
-- **Cor proibida:** nada de tons frios/corporativos (azul-escuro, cinza
-  chumbo) que quebrem o clima romântico
+- **Cards:** vidro translúcido (glassmorphism) sobre o fundo escuro
 
-*(valores hex são sugestão de partida — ajustar ao gosto quando o site for montado)*
+- **Cor proibida:** tons frios/corporativos (azul, cinza chumbo) e fundo
+  preto puro sem o vinho/carmim
+
+*(valores hex em uso no site — ver `site/styles.css`, bloco `:root`)*
 
 ---
 
@@ -40,9 +44,11 @@ ela adora).
 
 ## Estilo geral
 
-Fofo, romântico e suave. Acolhedor, com cara de feito à mão e com tempo —
-não template frio. Pode ter elementos delicados de lírio/flores, coraçõezinhos
-em dose leve. O clima reflete a personalidade dela: alegre e leve.
+Dark premium e romântico, **bem dinâmico e cheio de animações** (era pedido
+explícito do Heitor: nada genérico/simples). Vidro/glassmorphism, brilhos rosa,
+degradês, corações 3D flutuando. Animações em tudo: entradas dos elementos,
+reveals no scroll, parallax no mouse, botões magnéticos, tilt nos cards,
+cursor com brilho, corações no clique. Stack: HTML/CSS/JS + GSAP (ScrollTrigger).
 
 ---
 
