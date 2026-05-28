@@ -89,8 +89,10 @@ html.anim [data-anim] { opacity: 0; }
   transition: filter .3s;
 }
 .abertura__coracao:hover { filter: drop-shadow(0 0 52px rgba(255,77,109,1)); }
-.coracao-svg { width: 100%; height: 100%; display: block; }
-.coracao-svg path { fill: url(#gradCor); }
+.coracao-svg { width: 100%; height: 100%; display: block; overflow: visible; }
+/* imagem de coração opcional (se o usuário fornecer uma) */
+.coracao-img { width: 100%; height: 100%; object-fit: contain; display: block;
+  filter: drop-shadow(0 10px 24px rgba(0,0,0,.4)); }
 .abertura__anel, .abertura__anel--2 {
   position: absolute; inset: 8px; border-radius: 50%;
   box-shadow: 0 0 0 0 rgba(255,77,109,.5); animation: anel 1.8s ease-out infinite;

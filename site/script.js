@@ -24,6 +24,12 @@ const CONFIG = {
 
   // ✍️ Frase que "digita sozinha" na seção da história.
   fraseTypewriter: 'pode contar sempre comigo, eu vou estar com você!!!',
+
+  // 💗 Imagem de coração (OPCIONAL). Coloque uma imagem 3D bonita em
+  //    site/coracao.png e escreva o nome aqui ('coracao.png'). Ela vira o
+  //    coração da abertura E os corações da explosão. Deixe '' pra usar o
+  //    coração desenhado (SVG glossy).
+  imagemCoracao: '',
 };
 /* ====================== fim dos ajustes ===================== */
 
@@ -36,7 +42,10 @@ if (temGsap && !semMov && window.ScrollTrigger) gsap.registerPlugin(ScrollTrigge
 // Se o GSAP não carregou (offline, etc.), mostra tudo (sem depender de animação)
 if (!temGsap) document.documentElement.classList.remove('anim');
 
-/* ---------- 1. Abertura (explode → cobre a tela → cai) ----- */
+/* ---------- 1. Abertura (explode → cobre a tela → cai) -----
+   Feita em Web Animations API nativo — NÃO depende do GSAP, então
+   sempre funciona. O clique vale na tela inteira (mais difícil de errar).
+   ----------------------------------------------------------- */
 (function abertura() {
   const tela = document.getElementById('abertura');
   const botao = document.getElementById('botaoAbrir');
@@ -44,83 +53,114 @@ if (!temGsap) document.documentElement.classList.remove('anim');
   document.body.style.overflow = 'hidden';
   let abrindo = false;
 
+  // se o usuário forneceu uma imagem de coração, troca o SVG por ela
+  if (CONFIG.imagemCoracao) {
+    const svg = botao.querySelector('.coracao-svg');
+    if (svg) {
+      const img = document.createElement('img');
+      img.src = CONFIG.imagemCoracao; img.alt = 'coração'; img.className = 'coracao-img';
+      img.onerror = () => { img.replaceWith(svg); }; // se não achar, volta o desenho
+      svg.replaceWith(img);
+    }
+  }
+
   function finalizar() {
     document.body.style.overflow = '';
     introHero();
     if (CONFIG.temMusica) tentarTocarMusica();
   }
 
-  // fallback (sem GSAP ou "menos movimento"): fade simples
-  function abrirSimples() {
-    tela.classList.add('fechando');
-    setTimeout(() => tela.remove(), 1100);
-    chuvaDeCoracoes(24);
-    finalizar();
+  // cria um coração da explosão (imagem se houver, senão emoji)
+  function novoCoracao(tamanho) {
+    const emojis = ['💗', '❤️', '💕', '💖', '🌹', '💝'];
+    let el;
+    if (CONFIG.imagemCoracao) {
+      el = document.createElement('img');
+      el.src = CONFIG.imagemCoracao; el.alt = '';
+      el.style.width = tamanho + 'px'; el.style.height = 'auto';
+    } else {
+      el = document.createElement('span');
+      el.textContent = emojis[(Math.random() * emojis.length) | 0];
+      el.style.fontSize = tamanho + 'px';
+    }
+    el.className = 'exp-coracao';
+    return el;
   }
 
   function abrir() {
     if (abrindo) return; abrindo = true;
-    if (!temGsap || semMov) { abrirSimples(); return; }
 
     const r = botao.getBoundingClientRect();
     const ox = r.left + r.width / 2;
     const oy = r.top + r.height / 2;
-    botao.style.animation = 'none'; // desliga o "bater" pra o GSAP controlar o transform
 
-    // camada que vai cobrir a tela de corações
+    if (semMov) { tela.remove(); finalizar(); return; } // sem animação
+
+    botao.style.animation = 'none';
+    // 1) o coração incha e some (explode)
+    botao.animate(
+      [{ transform: 'scale(1)', opacity: 1 },
+       { transform: 'scale(1.5)', opacity: 1, offset: 0.45 },
+       { transform: 'scale(0)', opacity: 0 }],
+      { duration: 430, easing: 'cubic-bezier(.6,0,.85,.25)', fill: 'forwards' });
+    chuvaDeCoracoes(30, ox, oy); // estourinho radial extra
+
+    // 2) monta a grade de corações que vai cobrir a tela
     const layer = document.createElement('div');
     layer.className = 'explosao';
     document.body.appendChild(layer);
 
-    const cols = innerWidth < 600 ? 6 : 12;
+    const cols = innerWidth < 600 ? 6 : 11;
     const cell = innerWidth / cols;
     const rows = Math.ceil(innerHeight / cell) + 1;
-    const emojis = ['💗', '❤️', '💕', '💖', '🌹', '💝'];
-    const hearts = [];
+    const cx0 = (cols - 1) / 2, cy0 = (rows - 1) / 2;
+    const itens = [];
     for (let ry = 0; ry < rows; ry++) {
       for (let cx = 0; cx < cols; cx++) {
-        const h = document.createElement('span');
-        h.className = 'exp-coracao';
-        h.textContent = emojis[(Math.random() * emojis.length) | 0];
-        h.style.fontSize = (cell * (0.95 + Math.random() * 0.45)) + 'px';
-        h._tx = cx * cell + cell / 2 + (Math.random() * 30 - 15);
-        h._ty = ry * cell + cell / 2 + (Math.random() * 30 - 15);
-        // todos começam no centro (de onde o coração "explode"), invisíveis
-        gsap.set(h, { x: ox, y: oy, xPercent: -50, yPercent: -50, scale: 0, opacity: 1, rotation: Math.random() * 180 - 90 });
-        layer.appendChild(h);
-        hearts.push(h);
+        const tam = cell * (0.95 + Math.random() * 0.4);
+        const el = novoCoracao(tam);
+        layer.appendChild(el);
+        itens.push({
+          el,
+          tx: cx * cell + cell / 2 + (Math.random() * 26 - 13),
+          ty: ry * cell + cell / 2 + (Math.random() * 26 - 13),
+          rot: Math.random() * 180 - 90,
+          dist: Math.hypot(cx - cx0, ry - cy0),
+        });
       }
     }
+    const maxDist = Math.max(...itens.map((i) => i.dist)) || 1;
 
-    const tl = gsap.timeline();
-    // 1) carrega e explode o coração central
-    tl.to(botao, { scale: 1.4, duration: 0.2, ease: 'power2.in' })
-      .to(botao, { scale: 0, opacity: 0, duration: 0.22, ease: 'power2.in' });
-    // estourinho radial extra a partir do centro
-    tl.add(() => chuvaDeCoracoes(30, ox, oy), '-=0.12');
-    // 2) os corações se espalham e COBREM a tela
-    tl.to(hearts, {
-      x: (i, t) => t._tx, y: (i, t) => t._ty, scale: 1,
-      duration: 0.5, ease: 'back.out(1.4)',
-      stagger: { amount: 0.4, from: 'center', grid: [rows, cols] },
-    }, '-=0.05');
-    // 3) some o fundo da abertura (revela o site atrás) e o site começa a animar
-    tl.to(tela, {
-      opacity: 0, duration: 0.45, ease: 'power2.out',
-      onComplete: () => { tela.remove(); finalizar(); },
-    }, '-=0.15');
-    // 4) os corações CAEM (gravidade), revelando o site bonito atrás
-    tl.to(hearts, {
-      y: '+=' + (innerHeight + 240),
-      x: (i, t) => t._tx + (Math.random() * 180 - 90),
-      rotation: '+=140',
-      duration: 1.35, ease: 'power1.in',
-      stagger: { amount: 0.7, from: 'random' },
-    }, '+=0.05')
-      .add(() => layer.remove());
+    // 3) EXPLOSÃO: do centro pra cobrir a tela (stagger radial)
+    itens.forEach((it) => {
+      const atraso = 170 + (it.dist / maxDist) * 250;
+      it.el.animate(
+        [{ transform: `translate(${ox}px,${oy}px) translate(-50%,-50%) scale(0) rotate(${it.rot}deg)`, opacity: 1 },
+         { transform: `translate(${it.tx}px,${it.ty}px) translate(-50%,-50%) scale(1) rotate(${it.rot}deg)`, opacity: 1 }],
+        { duration: 480, delay: atraso, easing: 'cubic-bezier(.2,.8,.3,1.25)', fill: 'forwards' });
+    });
+
+    const tCobrir = 170 + 250 + 480; // ~900ms até cobrir tudo
+
+    // 4) some o fundo da abertura (revela o site) e o site começa a animar
+    setTimeout(() => {
+      tela.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 450, fill: 'forwards' })
+        .onfinish = () => { tela.remove(); finalizar(); };
+    }, tCobrir - 130);
+
+    // 5) os corações CAEM (gravidade), revelando o site bonito atrás
+    setTimeout(() => {
+      itens.forEach((it) => {
+        it.el.animate(
+          [{ transform: `translate(${it.tx}px,${it.ty}px) translate(-50%,-50%) scale(1) rotate(${it.rot}deg)`, opacity: 1 },
+           { transform: `translate(${it.tx + (Math.random() * 180 - 90)}px,${it.ty + innerHeight + 280}px) translate(-50%,-50%) scale(1) rotate(${it.rot + 160}deg)`, opacity: 1 }],
+          { duration: 1300, delay: Math.random() * 520, easing: 'cubic-bezier(.5,0,.9,.55)', fill: 'forwards' });
+      });
+      setTimeout(() => layer.remove(), 1300 + 600);
+    }, tCobrir + 120);
   }
 
-  botao.addEventListener('click', abrir);
+  tela.addEventListener('click', abrir);       // clique em qualquer lugar abre
   botao.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); abrir(); }
   });
