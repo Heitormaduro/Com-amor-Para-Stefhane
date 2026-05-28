@@ -1,0 +1,13 @@
+# Rede de segurança: nada disso pode ir pro ar no Vercel.
+# O site publicado deve servir SOMENTE a pasta site/ (Root Directory = site).
+# Mas, por garantia, listamos aqui as pastas privadas.
+_memoria/
+identidade/
+dados/
+saidas/
+marketing/
+scripts/
+templates/
+.claude/
+CLAUDE.md
+README.md
