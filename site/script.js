@@ -30,6 +30,21 @@ const CONFIG = {
   //    coração da abertura E os corações da explosão. Deixe '' pra usar o
   //    coração desenhado (SVG glossy).
   imagemCoracao: '',
+
+  // 📌 Marcos da linha do tempo (a Stefhane toca em cada um pra abrir um cardzinho).
+  //    Pode editar à vontade — frases que tenham a ver com vocês ficam mais fortes.
+  marcos: [
+    { titulo: 'A primeira mensagem',
+      texto: '13 de novembro. eu mandei uma. só uma. e a gente não parou mais — nem um dia.' },
+    { titulo: 'O foguinho começou',
+      texto: 'em uma semana a gente já tinha aceso o foguinho do TikTok. e ele nunca apagou. 🔥' },
+    { titulo: '1 mês',
+      texto: 'um mês conversando todo dia, sem perder nenhum. ai eu já sabia que era diferente.' },
+    { titulo: '100 dias',
+      texto: '100 dias sem perder um. três meses pensando "que sorte eu ter te encontrado".' },
+    { titulo: 'Hoje',
+      texto: 'e aqui a gente tá. com plano, com aliança guardada. olha — a melhor parte ainda nem começou. 😏' },
+  ],
 };
 /* ====================== fim dos ajustes ===================== */
 
@@ -390,7 +405,7 @@ document.addEventListener('DOMContentLoaded', revealsNoScroll);
   }
 })();
 
-/* ---------- 9. Contador ao vivo ---------------------------- */
+/* ---------- 9. Contador ao vivo (com count-up no reveal) -- */
 (function contador() {
   const caixa = document.getElementById('contadorTempo');
   if (!caixa) return;
@@ -402,17 +417,80 @@ document.addEventListener('DOMContentLoaded', revealsNoScroll);
     minutos: caixa.querySelector('[data-unit="minutos"]'),
     segundos: caixa.querySelector('[data-unit="segundos"]'),
   };
-  function tick() {
+  function valoresAgora() {
     let d = Math.max(0, Date.now() - inicio.getTime()) / 1000;
     const dias = Math.floor(d / 86400); d -= dias * 86400;
     const horas = Math.floor(d / 3600); d -= horas * 3600;
-    const min = Math.floor(d / 60); const seg = Math.floor(d - min * 60);
-    c.dias.textContent = dias;
-    c.horas.textContent = String(horas).padStart(2, '0');
-    c.minutos.textContent = String(min).padStart(2, '0');
-    c.segundos.textContent = String(seg).padStart(2, '0');
+    const min = Math.floor(d / 60);
+    const seg = Math.floor(d - min * 60);
+    return { dias, horas, min, seg };
   }
-  tick(); setInterval(tick, 1000);
+  function pintar(v) {
+    c.dias.textContent = v.dias;
+    c.horas.textContent = String(v.horas).padStart(2, '0');
+    c.minutos.textContent = String(v.min).padStart(2, '0');
+    c.segundos.textContent = String(v.seg).padStart(2, '0');
+  }
+  // começa zerado
+  pintar({ dias: 0, horas: 0, min: 0, seg: 0 });
+
+  let comecou = false;
+  function rodarCountUp() {
+    if (comecou) return; comecou = true;
+    const dur = 1700;
+    const t0 = performance.now();
+    const alvo = valoresAgora();
+    function step(ts) {
+      const p = Math.min(1, (ts - t0) / dur);
+      const e = 1 - Math.pow(1 - p, 3); // easeOutCubic
+      pintar({
+        dias: Math.floor(alvo.dias * e),
+        horas: Math.floor(alvo.horas * e),
+        min: Math.floor(alvo.min * e),
+        seg: Math.floor(alvo.seg * e),
+      });
+      if (p < 1) requestAnimationFrame(step);
+      else {
+        pintar(valoresAgora());
+        setInterval(() => pintar(valoresAgora()), 1000);
+      }
+    }
+    requestAnimationFrame(step);
+  }
+
+  const obs = new IntersectionObserver((es) => {
+    es.forEach((e) => { if (e.isIntersecting) rodarCountUp(); });
+  }, { threshold: 0.35 });
+  obs.observe(caixa);
+})();
+
+/* ---------- 9.5 Marcos interativos (linha do tempo) -------- */
+(function marcos() {
+  const botoes = document.querySelectorAll('.marco');
+  const cardEl = document.getElementById('marcoCard');
+  if (!botoes.length || !cardEl) return;
+
+  let aberto = -1;
+  function fechar() {
+    cardEl.classList.remove('aberto');
+    setTimeout(() => { cardEl.hidden = true; cardEl.innerHTML = ''; }, 320);
+    aberto = -1;
+  }
+  function abrir(i) {
+    const d = CONFIG.marcos[i];
+    if (!d) return;
+    if (aberto === i) { fechar(); return; }
+    aberto = i;
+    cardEl.innerHTML = `
+      <button class="marco__fechar" type="button" aria-label="Fechar">×</button>
+      <p class="marco__data">${d.titulo}</p>
+      <p class="marco__texto">${d.texto}</p>
+    `;
+    cardEl.hidden = false;
+    requestAnimationFrame(() => cardEl.classList.add('aberto'));
+    cardEl.querySelector('.marco__fechar').addEventListener('click', fechar);
+  }
+  botoes.forEach((b, i) => b.addEventListener('click', () => abrir(i)));
 })();
 
 /* ---------- 10. Galeria (monta + tilt + lightbox) ---------- */

@@ -160,14 +160,65 @@
 
     <!-- =========================== CONTADOR ========================== -->
     <section class="secao secao--contador" id="contador">
+      <span class="secao__glow" aria-hidden="true"></span>
+      <span class="flutua-coracao fc1" aria-hidden="true">💗</span>
+      <span class="flutua-coracao fc2" aria-hidden="true">❤️</span>
+      <span class="flutua-coracao fc3" aria-hidden="true">💕</span>
+      <span class="flutua-coracao fc4" aria-hidden="true">💖</span>
+      <span class="flutua-coracao fc5" aria-hidden="true">🌹</span>
+
       <h2 class="titulo" data-anim>A gente conversa há</h2>
       <div class="contador" id="contadorTempo" aria-live="polite">
-        <div class="contador__item vidro" data-anim><span class="contador__num" data-unit="dias">0</span><span class="contador__rot">dias</span></div>
-        <div class="contador__item vidro" data-anim><span class="contador__num" data-unit="horas">0</span><span class="contador__rot">horas</span></div>
-        <div class="contador__item vidro" data-anim><span class="contador__num" data-unit="minutos">0</span><span class="contador__rot">minutos</span></div>
-        <div class="contador__item vidro" data-anim><span class="contador__num" data-unit="segundos">0</span><span class="contador__rot">segundos</span></div>
+        <div class="contador__item vidro" data-anim>
+          <span class="contador__icone">📅</span>
+          <span class="contador__num" data-unit="dias">0</span>
+          <span class="contador__rot">dias</span>
+        </div>
+        <div class="contador__item vidro" data-anim>
+          <span class="contador__icone">⏰</span>
+          <span class="contador__num" data-unit="horas">0</span>
+          <span class="contador__rot">horas</span>
+        </div>
+        <div class="contador__item vidro" data-anim>
+          <span class="contador__icone">⏳</span>
+          <span class="contador__num" data-unit="minutos">0</span>
+          <span class="contador__rot">minutos</span>
+        </div>
+        <div class="contador__item vidro contador__item--ativo" data-anim>
+          <span class="contador__icone">✨</span>
+          <span class="contador__num" data-unit="segundos">0</span>
+          <span class="contador__rot">segundos</span>
+        </div>
       </div>
       <p class="legenda" data-anim>…e contando. 💕</p>
+
+      <!-- marcos interativos: ela toca pra reviver um momento -->
+      <div class="marcos" data-anim>
+        <p class="marcos__dica">toque num marco pra reviver 👇</p>
+        <div class="marcos__linha" id="marcosLinha">
+          <button class="marco" type="button" data-marco="0">
+            <span class="marco__ponto">💬</span>
+            <span class="marco__rotulo">1ª msg</span>
+          </button>
+          <button class="marco" type="button" data-marco="1">
+            <span class="marco__ponto">🔥</span>
+            <span class="marco__rotulo">foguinho</span>
+          </button>
+          <button class="marco" type="button" data-marco="2">
+            <span class="marco__ponto">🤍</span>
+            <span class="marco__rotulo">1 mês</span>
+          </button>
+          <button class="marco" type="button" data-marco="3">
+            <span class="marco__ponto">💯</span>
+            <span class="marco__rotulo">100 dias</span>
+          </button>
+          <button class="marco marco--agora" type="button" data-marco="4">
+            <span class="marco__ponto">✨</span>
+            <span class="marco__rotulo">hoje</span>
+          </button>
+        </div>
+        <div class="marco__card vidro" id="marcoCard" hidden></div>
+      </div>
     </section>
 
     <!-- =========================== HISTÓRIA ========================== -->
