@@ -61,6 +61,28 @@ html.anim [data-anim] { opacity: 0; }
   background-image: radial-gradient(rgba(255,255,255,.5) .5px, transparent .5px);
   background-size: 4px 4px; }
 
+/* ----- BOKEH: luzinhas desfocadas em vários cantos pra dar profundidade ----- */
+.bg__bokeh { position: absolute; border-radius: 50%; filter: blur(40px); opacity: .42; pointer-events: none;
+  will-change: transform; animation: bokehDrift 18s ease-in-out infinite; }
+.bg__bokeh--a { width: 220px; height: 220px; top: 12%; left: 6%;
+  background: radial-gradient(circle, rgba(255,143,163,.65), transparent 70%); animation-delay: 0s; }
+.bg__bokeh--b { width: 140px; height: 140px; top: 22%; left: 78%;
+  background: radial-gradient(circle, rgba(255,77,109,.55), transparent 70%); animation-delay: -4s; }
+.bg__bokeh--c { width: 200px; height: 200px; top: 68%; left: 18%;
+  background: radial-gradient(circle, rgba(255,143,163,.5), transparent 70%); animation-delay: -8s; }
+.bg__bokeh--d { width: 120px; height: 120px; top: 62%; left: 82%;
+  background: radial-gradient(circle, rgba(224,22,63,.45), transparent 70%); animation-delay: -12s; }
+.bg__bokeh--e { width: 90px; height: 90px; top: 8%; left: 45%;
+  background: radial-gradient(circle, rgba(255,143,163,.45), transparent 70%); animation-delay: -6s; opacity: .3; }
+@keyframes bokehDrift {
+  0%, 100% { transform: translate(0,0) scale(1); }
+  50% { transform: translate(20px, -18px) scale(1.08); }
+}
+
+/* ----- VINHETA: escurece os cantos pra dar profundidade ----- */
+.bg__vinheta { position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 90% 80% at center, transparent 30%, rgba(8,2,5,.55) 80%, rgba(8,2,5,.85) 100%); }
+
 .petalas { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; }
 
 /* ========================= VIDRO ============================ */
@@ -77,8 +99,11 @@ html.anim [data-anim] { opacity: 0; }
 .abertura {
   position: fixed; inset: 0; z-index: 9999;
   display: grid; place-items: center;
-  background: radial-gradient(800px 600px at 50% 45%, #3d0d1a, var(--bg0));
+  background:
+    radial-gradient(900px 700px at 50% 42%, rgba(102, 16, 42, 0.7), transparent 75%),
+    linear-gradient(165deg, #2a0810 0%, #1a050b 55%, #0d0306 100%);
   transition: opacity 1s ease, visibility 1s ease;
+  overflow: hidden;
 }
 .abertura.fechando { opacity: 0; visibility: hidden; }
 .abertura__conteudo { text-align: center; position: relative; z-index: 3; }
@@ -111,9 +136,70 @@ html.anim [data-anim] { opacity: 0; }
 .abertura__pre { font-family: var(--f-script); font-size: clamp(1.5rem, 4vw, 2.2rem);
   color: var(--rosa-claro); margin-bottom: 8px; opacity: .9; letter-spacing: 1px; }
 
-/* ----- caixa central que segura o coração + halo + anéis ----- */
-.abertura__centro { position: relative; width: clamp(260px, 60vw, 360px); height: clamp(260px, 60vw, 360px);
+/* ----- caixa central: medalha 3D em camadas + heart no centro ----- */
+.abertura__centro { position: relative; width: clamp(280px, 65vw, 400px); height: clamp(280px, 65vw, 400px);
   margin: 0 auto 14px; display: grid; place-items: center; }
+
+/* MEDALHA: três camadas concêntricas que simulam relevo (rim 3D + recesso) */
+.medalha { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
+  border-radius: 50%; pointer-events: none; }
+
+/* Camada 1 — borda externa "elevada" (rim lighting + sombra projetada) */
+.medalha--borda {
+  width: 100%; height: 100%;
+  background: linear-gradient(160deg,
+    rgba(255, 175, 195, 0.55) 0%,
+    rgba(180, 50, 80, 0.45) 35%,
+    rgba(74, 12, 28, 0.85) 70%,
+    rgba(22, 4, 11, 0.95) 100%);
+  box-shadow:
+    inset 0 4px 16px rgba(255, 220, 230, 0.22),
+    inset 0 -14px 28px rgba(0, 0, 0, 0.55),
+    inset 8px 0 18px rgba(0, 0, 0, 0.25),
+    inset -8px 0 18px rgba(255, 143, 163, 0.18),
+    0 22px 60px rgba(0, 0, 0, 0.7),
+    0 0 70px rgba(255, 77, 109, 0.18);
+}
+
+/* Camada 2 — anel do meio (depressão suave) */
+.medalha--meio {
+  width: 78%; height: 78%;
+  background: linear-gradient(160deg,
+    rgba(140, 22, 52, 0.55) 0%,
+    rgba(70, 10, 24, 0.7) 50%,
+    rgba(30, 4, 12, 0.85) 100%);
+  box-shadow:
+    inset 0 4px 14px rgba(255, 200, 210, 0.15),
+    inset 0 -8px 22px rgba(0, 0, 0, 0.6),
+    inset 0 12px 26px rgba(0, 0, 0, 0.4);
+}
+
+/* Camada 3 — poço fundo recuado (onde o coração "fica dentro") */
+.medalha--fundo {
+  width: 55%; height: 55%;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(160, 28, 60, 0.65), rgba(35, 5, 12, 0.92) 75%);
+  box-shadow:
+    inset 0 8px 22px rgba(0, 0, 0, 0.78),
+    inset 0 -3px 8px rgba(255, 77, 109, 0.22),
+    inset 4px 0 10px rgba(0, 0, 0, 0.35);
+}
+
+/* Brilho diagonal sutil sobre a medalha (gloss em movimento devagar) */
+.medalha-brilho {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
+  width: 100%; height: 100%; border-radius: 50%; pointer-events: none; overflow: hidden;
+}
+.medalha-brilho::before {
+  content: '';
+  position: absolute; inset: -50%;
+  background: linear-gradient(120deg, transparent 35%, rgba(255, 220, 230, 0.18) 50%, transparent 65%);
+  animation: gloss 7s ease-in-out infinite;
+}
+@keyframes gloss {
+  0%, 100% { transform: translateX(-30%); opacity: 0; }
+  50% { transform: translateX(30%); opacity: 1; }
+}
 .halo-aurora { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
   width: 100%; height: 100%; border-radius: 50%; pointer-events: none;
   background: radial-gradient(circle, rgba(255,77,109,.6), rgba(255,77,109,0) 65%);
@@ -169,9 +255,11 @@ html.anim [data-anim] { opacity: 0; }
 
 /* durante a transição: desliga efeitos pesados de fundo pra ganhar fps */
 body.transicao .bg__orb,
+body.transicao .bg__bokeh,
 body.transicao .petalas { display: none; }
 body.transicao .halo-aurora,
-body.transicao .halo-ring { animation-play-state: paused; }
+body.transicao .halo-ring,
+body.transicao .medalha-brilho::before { animation-play-state: paused; }
 
 /* ======================== CURSOR ============================ */
 .cursor { position: fixed; top:0; left:0; width: 10px; height: 10px; border-radius: 50%;

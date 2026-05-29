@@ -18,12 +18,18 @@
 </head>
 <body>
 
-  <!-- ====================== FUNDO (orbs de brilho) ===================== -->
+  <!-- ====================== FUNDO (orbs de brilho + bokeh + vinheta) ===================== -->
   <div class="bg" aria-hidden="true">
     <span class="bg__orb bg__orb--1"></span>
     <span class="bg__orb bg__orb--2"></span>
     <span class="bg__orb bg__orb--3"></span>
+    <span class="bg__bokeh bg__bokeh--a"></span>
+    <span class="bg__bokeh bg__bokeh--b"></span>
+    <span class="bg__bokeh bg__bokeh--c"></span>
+    <span class="bg__bokeh bg__bokeh--d"></span>
+    <span class="bg__bokeh bg__bokeh--e"></span>
     <span class="bg__grão"></span>
+    <span class="bg__vinheta"></span>
   </div>
 
   <!-- pétalas/corações caindo (canvas) -->
@@ -31,6 +37,13 @@
 
   <!-- ============================ ABERTURA ============================ -->
   <div class="abertura" id="abertura">
+    <!-- bokeh dentro da abertura (luzinhas desfocadas dão profundidade) -->
+    <span class="bg__bokeh bg__bokeh--a" aria-hidden="true"></span>
+    <span class="bg__bokeh bg__bokeh--b" aria-hidden="true"></span>
+    <span class="bg__bokeh bg__bokeh--c" aria-hidden="true"></span>
+    <span class="bg__bokeh bg__bokeh--d" aria-hidden="true"></span>
+    <span class="bg__bokeh bg__bokeh--e" aria-hidden="true"></span>
+    <span class="bg__vinheta" aria-hidden="true"></span>
     <!-- estrelinhas cintilando espalhadas (geradas via JS) -->
     <div class="abertura__sparkles" id="aberturaSparkles" aria-hidden="true"></div>
     <!-- mini corações subindo no fundo -->
@@ -43,8 +56,12 @@
       <p class="abertura__pre">para Stefhane,</p>
       <div class="abertura__centro">
         <span class="halo-aurora" aria-hidden="true"></span>
+        <span class="medalha medalha--borda" aria-hidden="true"></span>
+        <span class="medalha medalha--meio" aria-hidden="true"></span>
         <span class="halo-ring r1" aria-hidden="true"></span>
         <span class="halo-ring r2" aria-hidden="true"></span>
+        <span class="medalha medalha--fundo" aria-hidden="true"></span>
+        <span class="medalha-brilho" aria-hidden="true"></span>
       <div class="abertura__coracao" id="botaoAbrir" role="button" tabindex="0" aria-label="Abrir a surpresa">
         <span class="abertura__faisca f1">✨</span>
         <span class="abertura__faisca f2">💕</span>

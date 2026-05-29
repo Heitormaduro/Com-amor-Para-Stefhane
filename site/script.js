@@ -66,15 +66,26 @@ if (!temGsap) document.documentElement.classList.remove('anim');
     }
   }
 
-  // gera estrelinhas cintilando espalhadas pela tela inicial
+  // gera estrelinhas cintilando espalhadas — tamanhos variados (depth!)
   const sparkCont = document.getElementById('aberturaSparkles');
   if (sparkCont) {
-    const n = innerWidth < 600 ? 22 : 34;
+    const n = innerWidth < 600 ? 30 : 48;
     for (let i = 0; i < n; i++) {
       const s = document.createElement('span');
       s.style.left = (Math.random() * 100) + '%';
       s.style.top = (Math.random() * 100) + '%';
-      const sz = 2 + Math.random() * 3;
+      // 15% grandes (brilhão), 30% médias, 55% pequenas — variedade de profundidade
+      const r = Math.random();
+      let sz;
+      if (r < 0.15) {
+        sz = 7 + Math.random() * 5;          // 7-12px (estrelas brilhantes)
+        s.style.boxShadow = '0 0 16px 2px rgba(255, 200, 215, .95)';
+      } else if (r < 0.45) {
+        sz = 4 + Math.random() * 2;          // 4-6px (médias)
+      } else {
+        sz = 1.5 + Math.random() * 2;        // 1.5-3.5px (poeira longe)
+        s.style.opacity = '.7';
+      }
       s.style.width = sz + 'px'; s.style.height = sz + 'px';
       s.style.animationDelay = (Math.random() * 3) + 's';
       s.style.animationDuration = (2 + Math.random() * 2.5) + 's';
