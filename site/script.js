@@ -119,7 +119,7 @@ if (!temGsap) document.documentElement.classList.remove('anim');
     // SPRITE CACHE: renderiza cada emoji uma vez em offscreen canvas
     // (drawImage é MUITO mais rápido que fillText em loop por frame)
     const emojis = ['💗', '❤️', '💕', '💖', '🌹', '💝'];
-    const SP = Math.min(200, Math.floor(innerWidth / 5));
+    const SP = Math.min(320, Math.floor(innerWidth / 4));
     const sprites = emojis.map((ch) => {
       const off = document.createElement('canvas');
       off.width = off.height = SP;
@@ -134,11 +134,12 @@ if (!temGsap) document.documentElement.classList.remove('anim');
     let imgSprite = null;
     if (CONFIG.imagemCoracao) { imgSprite = new Image(); imgSprite.src = CONFIG.imagemCoracao; }
 
-    // grade menos densa (menos corações = mais smooth, ainda cobre)
-    const cols = innerWidth < 600 ? 6 : 9;
+    // grade de base — corações GRANDES e BAGUNÇADOS (cobre tudo, sem buracos)
+    const cols = innerWidth < 600 ? 5 : 8;
     const cell = innerWidth / cols;
     const rows = Math.ceil(innerHeight / cell) + 1;
     const cx0 = (cols - 1) / 2, cy0 = (rows - 1) / 2;
+    const jitter = cell * 0.35;
     let maxDist = 0;
     const hearts = [];
     for (let ry = 0; ry < rows; ry++) for (let cx = 0; cx < cols; cx++) {
@@ -146,13 +147,32 @@ if (!temGsap) document.documentElement.classList.remove('anim');
       if (dist > maxDist) maxDist = dist;
       hearts.push({
         sp: (Math.random() * sprites.length) | 0,
-        tx: cx * cell + cell / 2 + (Math.random() * 26 - 13),
-        ty: ry * cell + cell / 2 + (Math.random() * 26 - 13),
-        size: cell * (0.95 + Math.random() * 0.25),
-        rot0: Math.random() * 180 - 90,
+        tx: cx * cell + cell / 2 + (Math.random() * jitter * 2 - jitter),
+        ty: ry * cell + cell / 2 + (Math.random() * jitter * 2 - jitter),
+        size: cell * (1.4 + Math.random() * 0.6),    // 1.4-2.0× → overlap garantido
+        rot0: Math.random() * 240 - 120,             // -120° a +120° (bem inclinado)
         dist,
         fallDelay: Math.random() * 520,
-        driftX: Math.random() * 180 - 90,
+        driftX: Math.random() * 200 - 100,
+      });
+    }
+    // FILLERS: corações em posições totalmente aleatórias pra tampar qualquer canto
+    const fillN = innerWidth < 600 ? 14 : 24;
+    for (let i = 0; i < fillN; i++) {
+      const rx = Math.random() * innerWidth;
+      const ry = Math.random() * innerHeight;
+      const fx = (rx / innerWidth - 0.5) * cols * 0.7;
+      const fy = (ry / innerHeight - 0.5) * rows * 0.7;
+      const dist = Math.hypot(fx, fy);
+      if (dist > maxDist) maxDist = dist;
+      hearts.push({
+        sp: (Math.random() * sprites.length) | 0,
+        tx: rx, ty: ry,
+        size: cell * (1.1 + Math.random() * 0.7),
+        rot0: Math.random() * 240 - 120,
+        dist,
+        fallDelay: Math.random() * 520,
+        driftX: Math.random() * 220 - 110,
       });
     }
     hearts.forEach((h) => { h.explodeDelay = 170 + (h.dist / (maxDist || 1)) * 250; });
