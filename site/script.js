@@ -493,97 +493,158 @@ document.addEventListener('DOMContentLoaded', revealsNoScroll);
   botoes.forEach((b, i) => b.addEventListener('click', () => abrir(i)));
 })();
 
-/* ---------- 10. Galeria (fotos penduradas + lightbox) ----- */
-(function galeria() {
+/* ---------- 10. Fotos no FUNDO seguindo o scroll ----------
+   As fotos vivem em position:fixed no fundo. Conforme a Stefhane rola, elas
+   APARECEM uma de cada vez vindo do lado, ficam flutuando no fundo, e quando
+   chegam na seção da Galeria (no fim) ATERRISSAM nos seus slots em grid.
+   ----------------------------------------------------------- */
+(function fotosFundo() {
+  const galSection = document.getElementById('galeria');
   const grid = document.getElementById('gridGaleria');
-  if (!grid) return;
-  CONFIG.fotos.forEach((f) => {
-    // wrapper que vai BALANÇAR (cordinha + clip são pseudo-elementos)
-    const wrap = document.createElement('div');
-    wrap.className = 'pendurada';
+  if (!galSection || !grid) return;
 
-    const fig = document.createElement('figure');
-    fig.className = 'foto';
+  // contêiner fixo que segura as fotos do fundo
+  const bgCont = document.createElement('div');
+  bgCont.className = 'fotos-bg';
+  bgCont.setAttribute('aria-hidden', 'true');
+  document.body.insertBefore(bgCont, document.body.firstChild.nextSibling);
+
+  const items = [];
+  CONFIG.fotos.forEach((f, i) => {
+    // foto flutuante
+    const el = document.createElement('figure');
+    el.className = 'foto-bg';
+    el.dataset.idx = String(i);
     const img = new Image();
-    img.src = f.arquivo; img.alt = f.legenda || 'foto do casal'; img.loading = 'lazy';
+    img.src = f.arquivo; img.alt = f.legenda || ''; img.loading = 'lazy';
+    el.appendChild(img);
     const leg = document.createElement('figcaption');
-    leg.className = 'foto__legenda'; leg.textContent = f.legenda || '';
+    leg.textContent = f.legenda || '';
+    el.appendChild(leg);
+    let vazia = false;
     img.onerror = () => {
-      fig.classList.add('foto--vazia');
-      fig.innerHTML = `<div class="foto__placeholder"><span>🌷</span><strong>foto aqui</strong><br /><small>${f.arquivo}</small></div>`;
+      vazia = true;
+      el.classList.add('foto-bg--vazia');
+      el.innerHTML = `<div class="foto__placeholder"><span>🌷</span><strong>foto aqui</strong><br /><small>${f.arquivo}</small></div>`;
     };
-    fig.appendChild(img); fig.appendChild(leg);
-    wrap.appendChild(fig);
-    grid.appendChild(wrap);
-
-    fig.addEventListener('click', () => {
-      if (!fig.classList.contains('foto--vazia')) abrirLightbox(f.arquivo, f.legenda);
+    el.addEventListener('click', () => {
+      if (!vazia && el.classList.contains('aterrissada')) abrirLightbox(f.arquivo, f.legenda);
     });
+    bgCont.appendChild(el);
+
+    // slot placeholder na galeria (reserva o espaço pra foto pousar)
+    const slot = document.createElement('div');
+    slot.className = 'foto-slot';
+    slot.dataset.idx = String(i);
+    grid.appendChild(slot);
+
+    items.push({ el });
   });
-  // liga o motor de balanço
-  rodarBalanco();
-})();
 
-/* ---------- 10.5 Balanço das fotos (cursor → swing) -------- */
-function rodarBalanco() {
-  const pend = document.querySelectorAll('.pendurada');
-  if (!pend.length || semMov) return;
-
-  const itens = Array.from(pend).map((el) => ({ el, ang: 0, vel: 0, absX: 0, absY: 0 }));
-
-  function offsetGeral(el) {
-    let x = 0, y = 0, n = el;
-    while (n) { x += n.offsetLeft; y += n.offsetTop; n = n.offsetParent; }
-    return { x, y };
+  if (semMov) {
+    // sem animação: já mostra direto nos slots
+    items.forEach((p, i) => {
+      const slot = grid.children[i];
+      const r = slot.getBoundingClientRect();
+      p.el.style.transform = `translate(${r.left}px, ${r.top}px)`;
+      p.el.style.opacity = '1';
+      p.el.classList.add('aterrissada');
+    });
+    return;
   }
-  function medir() {
-    for (const it of itens) {
-      const o = offsetGeral(it.el);
-      it.absX = o.x + it.el.offsetWidth / 2;
-      it.absY = o.y;
+
+  // âncoras (proporção da tela) durante a fase "flutuando no fundo"
+  const ancoras = [
+    { x: 0.14, y: 0.28, rot: -8 },
+    { x: 0.72, y: 0.34, rot: 6 },
+    { x: 0.18, y: 0.62, rot: 4 },
+    { x: 0.78, y: 0.55, rot: -5 },
+    { x: 0.08, y: 0.45, rot: -3 },
+    { x: 0.68, y: 0.22, rot: 7 },
+  ];
+
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  const smooth = (t) => t * t * (3 - 2 * t);
+
+  function tamFoto() {
+    const w = innerWidth < 520 ? 170 : 220;
+    return { w, h: w * 4 / 3 };
+  }
+
+  let sujo = true;
+  addEventListener('scroll', () => { sujo = true; }, { passive: true });
+  addEventListener('resize', () => { sujo = true; }, { passive: true });
+  setTimeout(() => { sujo = true; }, 600);
+  setTimeout(() => { sujo = true; }, 2000);
+
+  function atualizar() {
+    const sy = scrollY;
+    const vh = innerHeight, vw = innerWidth;
+    const { w: fw, h: fh } = tamFoto();
+
+    const galRect = galSection.getBoundingClientRect();
+    const galAbsTop = sy + galRect.top;
+
+    // aterrissagem começa quando a galeria está 80vh abaixo, termina a 15vh
+    const landStart = galAbsTop - vh * 0.8;
+    const landEnd = galAbsTop - vh * 0.15;
+    const landP = smooth(clamp((sy - landStart) / Math.max(1, landEnd - landStart), 0, 1));
+
+    for (let i = 0; i < items.length; i++) {
+      const p = items[i];
+      // cada foto introduz num ponto diferente do scroll
+      const introY = vh * (0.55 + i * 0.45);
+      const introP = smooth(clamp((sy - introY) / (vh * 0.45), 0, 1));
+
+      const a = ancoras[i % ancoras.length];
+      const ax = a.x * vw - fw / 2;
+      const ay = a.y * vh - fh / 2;
+
+      // posição inicial fora da tela (alterna lado)
+      const startX = (i % 2 === 0) ? -fw - 60 : vw + 60;
+      const startY = ay + 80;
+
+      // drift de parallax suave durante a fase flutuante
+      const drift = -((sy - introY) * 0.08) * introP;
+
+      const flX = lerp(startX, ax, introP);
+      const flY = lerp(startY, ay, introP) + drift;
+      const flRot = lerp(a.rot * 1.5, a.rot, introP);
+      const flOpacity = introP * 0.82;
+      const flScale = lerp(0.65, 0.92, introP);
+
+      // posição final no slot da galeria
+      const slot = grid.children[i];
+      let slotX = ax, slotY = ay, scaleAlvo = 1;
+      if (slot) {
+        const sr = slot.getBoundingClientRect();
+        slotX = sr.left + sr.width / 2 - fw / 2;
+        slotY = sr.top + sr.height / 2 - fh / 2;
+        // pequena correção de escala se o slot tem tamanho diferente
+        scaleAlvo = sr.width / fw;
+      }
+
+      const x = lerp(flX, slotX, landP);
+      const y = lerp(flY, slotY, landP);
+      const rot = lerp(flRot, 0, landP);
+      const scale = lerp(flScale, scaleAlvo, landP);
+      const opacity = lerp(flOpacity, 1, landP);
+
+      p.el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) rotate(${rot.toFixed(2)}deg) scale(${scale.toFixed(3)})`;
+      p.el.style.opacity = opacity.toFixed(3);
+
+      if (landP > 0.95) p.el.classList.add('aterrissada');
+      else p.el.classList.remove('aterrissada');
     }
   }
-  medir();
-  addEventListener('resize', medir, { passive: true });
-  // remede depois que as imagens carregarem (layout pode mudar)
-  setTimeout(medir, 500); setTimeout(medir, 1500);
-
-  let cx = -9999, cy = -9999;
-  addEventListener('mousemove', (e) => { cx = e.clientX; cy = e.clientY; });
-  addEventListener('touchmove', (e) => {
-    if (e.touches[0]) { cx = e.touches[0].clientX; cy = e.touches[0].clientY; }
-  }, { passive: true });
-  addEventListener('touchend', () => { cx = -9999; cy = -9999; });
-
-  const RAIO = 320;
-  const MAX_ANG = 22;
 
   function loop() {
-    if (document.body.classList.contains('transicao')) { requestAnimationFrame(loop); return; }
-    const sx = scrollX, sy = scrollY;
-    for (const it of itens) {
-      const pivotX = it.absX - sx;
-      const pivotY = it.absY - sy;
-      const dx = cx - pivotX;
-      const dy = Math.max(60, cy - pivotY);
-      const dist = Math.hypot(dx, dy);
-      let alvo = 0;
-      if (dist < RAIO) {
-        const prox = Math.pow(1 - dist / RAIO, 1.4);
-        alvo = Math.atan2(dx, dy) * 180 / Math.PI * prox;
-        if (alvo > MAX_ANG) alvo = MAX_ANG;
-        else if (alvo < -MAX_ANG) alvo = -MAX_ANG;
-      }
-      const diff = alvo - it.ang;
-      it.vel += diff * 0.06;
-      it.vel *= 0.92;
-      it.ang += it.vel;
-      it.el.style.setProperty('--ang', it.ang.toFixed(2) + 'deg');
-    }
+    if (sujo) { atualizar(); sujo = false; }
     requestAnimationFrame(loop);
   }
   loop();
-}
+})();
 
 function abrirLightbox(src, legenda) {
   const box = document.createElement('div');
