@@ -493,11 +493,15 @@ document.addEventListener('DOMContentLoaded', revealsNoScroll);
   botoes.forEach((b, i) => b.addEventListener('click', () => abrir(i)));
 })();
 
-/* ---------- 10. Galeria (monta + tilt + lightbox) ---------- */
+/* ---------- 10. Galeria (fotos penduradas + lightbox) ----- */
 (function galeria() {
   const grid = document.getElementById('gridGaleria');
   if (!grid) return;
   CONFIG.fotos.forEach((f) => {
+    // wrapper que vai BALANÇAR (cordinha + clip são pseudo-elementos)
+    const wrap = document.createElement('div');
+    wrap.className = 'pendurada';
+
     const fig = document.createElement('figure');
     fig.className = 'foto';
     const img = new Image();
@@ -508,19 +512,78 @@ document.addEventListener('DOMContentLoaded', revealsNoScroll);
       fig.classList.add('foto--vazia');
       fig.innerHTML = `<div class="foto__placeholder"><span>🌷</span><strong>foto aqui</strong><br /><small>${f.arquivo}</small></div>`;
     };
-    fig.appendChild(img); fig.appendChild(leg); grid.appendChild(fig);
-    if (!ehTouch && !semMov) {
-      fig.addEventListener('mousemove', (e) => {
-        const r = fig.getBoundingClientRect();
-        const px = (e.clientX - r.left) / r.width - 0.5;
-        const py = (e.clientY - r.top) / r.height - 0.5;
-        fig.style.transform = `perspective(700px) rotateY(${px*12}deg) rotateX(${-py*12}deg) scale(1.04)`;
-      });
-      fig.addEventListener('mouseleave', () => { fig.style.transform = ''; });
-    }
-    fig.addEventListener('click', () => { if (!fig.classList.contains('foto--vazia')) abrirLightbox(f.arquivo, f.legenda); });
+    fig.appendChild(img); fig.appendChild(leg);
+    wrap.appendChild(fig);
+    grid.appendChild(wrap);
+
+    fig.addEventListener('click', () => {
+      if (!fig.classList.contains('foto--vazia')) abrirLightbox(f.arquivo, f.legenda);
+    });
   });
+  // liga o motor de balanço
+  rodarBalanco();
 })();
+
+/* ---------- 10.5 Balanço das fotos (cursor → swing) -------- */
+function rodarBalanco() {
+  const pend = document.querySelectorAll('.pendurada');
+  if (!pend.length || semMov) return;
+
+  const itens = Array.from(pend).map((el) => ({ el, ang: 0, vel: 0, absX: 0, absY: 0 }));
+
+  function offsetGeral(el) {
+    let x = 0, y = 0, n = el;
+    while (n) { x += n.offsetLeft; y += n.offsetTop; n = n.offsetParent; }
+    return { x, y };
+  }
+  function medir() {
+    for (const it of itens) {
+      const o = offsetGeral(it.el);
+      it.absX = o.x + it.el.offsetWidth / 2;
+      it.absY = o.y;
+    }
+  }
+  medir();
+  addEventListener('resize', medir, { passive: true });
+  // remede depois que as imagens carregarem (layout pode mudar)
+  setTimeout(medir, 500); setTimeout(medir, 1500);
+
+  let cx = -9999, cy = -9999;
+  addEventListener('mousemove', (e) => { cx = e.clientX; cy = e.clientY; });
+  addEventListener('touchmove', (e) => {
+    if (e.touches[0]) { cx = e.touches[0].clientX; cy = e.touches[0].clientY; }
+  }, { passive: true });
+  addEventListener('touchend', () => { cx = -9999; cy = -9999; });
+
+  const RAIO = 320;
+  const MAX_ANG = 22;
+
+  function loop() {
+    if (document.body.classList.contains('transicao')) { requestAnimationFrame(loop); return; }
+    const sx = scrollX, sy = scrollY;
+    for (const it of itens) {
+      const pivotX = it.absX - sx;
+      const pivotY = it.absY - sy;
+      const dx = cx - pivotX;
+      const dy = Math.max(60, cy - pivotY);
+      const dist = Math.hypot(dx, dy);
+      let alvo = 0;
+      if (dist < RAIO) {
+        const prox = Math.pow(1 - dist / RAIO, 1.4);
+        alvo = Math.atan2(dx, dy) * 180 / Math.PI * prox;
+        if (alvo > MAX_ANG) alvo = MAX_ANG;
+        else if (alvo < -MAX_ANG) alvo = -MAX_ANG;
+      }
+      const diff = alvo - it.ang;
+      it.vel += diff * 0.06;
+      it.vel *= 0.92;
+      it.ang += it.vel;
+      it.el.style.setProperty('--ang', it.ang.toFixed(2) + 'deg');
+    }
+    requestAnimationFrame(loop);
+  }
+  loop();
+}
 
 function abrirLightbox(src, legenda) {
   const box = document.createElement('div');
