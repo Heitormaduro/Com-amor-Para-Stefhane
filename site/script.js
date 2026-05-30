@@ -511,22 +511,38 @@ document.addEventListener('DOMContentLoaded', revealsNoScroll);
 
   const items = [];
   CONFIG.fotos.forEach((f, i) => {
-    // foto flutuante
+    // foto flutuante (wrapper externo controlado por JS)
     const el = document.createElement('figure');
     el.className = 'foto-bg';
     el.dataset.idx = String(i);
+
+    // cartão interno (controlado por CSS — flutuação suave quando aterrissa)
+    const cartao = document.createElement('div');
+    cartao.className = 'foto-bg__cartao';
+
     const img = new Image();
     img.src = f.arquivo; img.alt = f.legenda || ''; img.loading = 'lazy';
-    el.appendChild(img);
+    cartao.appendChild(img);
+
     const leg = document.createElement('figcaption');
     leg.textContent = f.legenda || '';
-    el.appendChild(leg);
+    cartao.appendChild(leg);
+
+    el.appendChild(cartao);
+
     let vazia = false;
     img.onerror = () => {
       vazia = true;
       el.classList.add('foto-bg--vazia');
-      el.innerHTML = `<div class="foto__placeholder"><span>🌷</span><strong>foto aqui</strong><br /><small>${f.arquivo}</small></div>`;
+      cartao.innerHTML = `
+        <div class="foto__placeholder">
+          <span class="placeholder__moldura"><span class="placeholder__icone">🌹</span></span>
+          <p class="placeholder__label">uma foto sua aqui</p>
+          <p class="placeholder__path">${f.arquivo}</p>
+        </div>
+      `;
     };
+
     el.addEventListener('click', () => {
       if (!vazia && el.classList.contains('aterrissada')) abrirLightbox(f.arquivo, f.legenda);
     });

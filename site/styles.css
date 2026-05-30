@@ -512,8 +512,7 @@ body.transicao .medalha-brilho::before { animation-play-state: paused; }
 /* a galeria final (climax): só placeholders (slots) onde as fotos pousam */
 .galeria { display: grid; grid-template-columns: repeat(auto-fit, 220px);
   gap: 26px; justify-content: center; margin-top: 36px; }
-.foto-slot { width: 220px; height: 294px; border-radius: var(--raio);
-  background: rgba(255,255,255,0.015); border: 1px dashed rgba(255,255,255,0.06); }
+.foto-slot { width: 220px; height: 294px; }
 @media (max-width: 520px) {
   .galeria { grid-template-columns: repeat(auto-fit, 170px); }
   .foto-slot { width: 170px; height: 227px; }
@@ -525,36 +524,95 @@ body.transicao .medalha-brilho::before { animation-play-state: paused; }
   pointer-events: none; z-index: 0;
   overflow: hidden;
 }
+/* wrapper externo: o JS posiciona aqui (transform/opacity) */
 .foto-bg {
   position: absolute; top: 0; left: 0;
   width: 220px; height: 294px;
-  border-radius: var(--raio); overflow: hidden;
-  border: 1px solid var(--vidro-bd);
-  box-shadow: 0 24px 60px rgba(0,0,0,.65);
   opacity: 0;
-  background: linear-gradient(145deg, #3d0d1a, #1a0509);
-  transform-origin: center center;
   will-change: transform, opacity;
-  transition: box-shadow .3s;
 }
 @media (max-width: 520px) {
   .foto-bg { width: 170px; height: 227px; }
 }
-.foto-bg img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.foto-bg figcaption {
-  position: absolute; left:0; right:0; bottom:0;
+
+/* cartão interno: visual + flutuação por CSS */
+.foto-bg__cartao {
+  position: absolute; inset: 0;
+  border-radius: var(--raio); overflow: hidden;
+  background: linear-gradient(160deg, #4a1024 0%, #2a0810 55%, #1a0509 100%);
+  border: 1px solid rgba(255, 143, 163, 0.18);
+  box-shadow:
+    0 28px 60px rgba(0, 0, 0, .65),
+    0 8px 20px rgba(255, 77, 109, .08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: box-shadow .35s, border-color .35s;
+  display: grid; place-items: center;
+}
+.foto-bg__cartao img { width: 100%; height: 100%; object-fit: cover; display: block; grid-area: 1/1; }
+.foto-bg__cartao figcaption {
+  position: absolute; left:0; right:0; bottom:0; grid-area: 1/1; align-self: end;
   padding: 40px 14px 14px;
-  background: linear-gradient(transparent, rgba(20,5,9,.92));
+  background: linear-gradient(transparent, rgba(20,5,9,.95));
   color: #fff; font-size: .92rem; text-align: left;
-  opacity: 0; transition: opacity .35s;
+  opacity: 0; transition: opacity .35s; transform: translateY(8px);
 }
 .foto-bg.aterrissada { pointer-events: auto; cursor: pointer; }
-.foto-bg.aterrissada:hover { box-shadow: 0 30px 70px rgba(255,77,109,.5); }
-.foto-bg.aterrissada:hover figcaption { opacity: 1; }
-.foto-bg.foto-bg--vazia { display: grid; place-items: center; }
-.foto-bg .foto__placeholder { text-align: center; color: var(--rosa-claro); padding: 16px; }
-.foto-bg .foto__placeholder span { font-size: 2.4rem; display: block; margin-bottom: 6px; }
-.foto-bg .foto__placeholder small { color: var(--texto-suave); font-size: .76rem; }
+.foto-bg.aterrissada:hover .foto-bg__cartao {
+  box-shadow:
+    0 36px 80px rgba(255, 77, 109, .55),
+    0 10px 24px rgba(255, 77, 109, .25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 143, 163, 0.45);
+}
+.foto-bg.aterrissada:hover .foto-bg__cartao figcaption { opacity: 1; transform: translateY(0); }
+
+/* ----- FLUTUAÇÃO: cada cartão balança levinho quando pousou ----- */
+.foto-bg.aterrissada .foto-bg__cartao {
+  animation: flutuaFoto 5s ease-in-out infinite;
+}
+@keyframes flutuaFoto {
+  0%, 100% { transform: translateY(0) rotate(-0.4deg); }
+  50%       { transform: translateY(-14px) rotate(0.5deg); }
+}
+/* tempos diferentes por foto pra parecer orgânico (cada uma no seu ritmo) */
+.foto-bg:nth-of-type(1).aterrissada .foto-bg__cartao { animation-duration: 5.0s; animation-delay: 0s; }
+.foto-bg:nth-of-type(2).aterrissada .foto-bg__cartao { animation-duration: 5.6s; animation-delay: -0.8s; }
+.foto-bg:nth-of-type(3).aterrissada .foto-bg__cartao { animation-duration: 4.7s; animation-delay: -1.7s; }
+.foto-bg:nth-of-type(4).aterrissada .foto-bg__cartao { animation-duration: 5.4s; animation-delay: -2.5s; animation-direction: reverse; }
+.foto-bg:nth-of-type(5).aterrissada .foto-bg__cartao { animation-duration: 5.2s; animation-delay: -3.4s; }
+.foto-bg:nth-of-type(6).aterrissada .foto-bg__cartao { animation-duration: 4.8s; animation-delay: -4.2s; animation-direction: reverse; }
+
+/* ----- PLACEHOLDER (quando ainda não tem foto) ----- */
+.foto-bg.foto-bg--vazia .foto-bg__cartao { display: grid; place-items: center; }
+.foto__placeholder {
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  padding: 20px; text-align: center; max-width: 90%;
+}
+.placeholder__moldura {
+  width: 78px; height: 78px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: radial-gradient(circle at 35% 35%, rgba(255,77,109,.18), rgba(255,77,109,.04) 65%, transparent 90%);
+  border: 1px dashed rgba(255, 143, 163, 0.5);
+  box-shadow: inset 0 0 14px rgba(255,77,109,.12);
+}
+.placeholder__icone {
+  font-size: 2.1rem; line-height: 1;
+  filter: drop-shadow(0 0 12px rgba(255, 77, 109, 0.55));
+  animation: pulsaPlace 3s ease-in-out infinite;
+}
+@keyframes pulsaPlace {
+  0%, 100% { transform: scale(1); opacity: .9; }
+  50%       { transform: scale(1.12); opacity: 1; }
+}
+.placeholder__label {
+  font-family: var(--f-script); color: var(--rosa-claro);
+  font-size: 1.35rem; line-height: 1.2; margin: 0;
+}
+.placeholder__path {
+  font-family: ui-monospace, 'Cascadia Mono', 'Consolas', monospace;
+  color: var(--texto-suave); font-size: 0.7rem; letter-spacing: 0.5px;
+  opacity: 0.7; margin: 0; word-break: break-all;
+}
 
 /* ========================== CARDS =========================== */
 .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; margin-top: 30px; }
