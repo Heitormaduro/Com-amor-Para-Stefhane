@@ -569,7 +569,7 @@ document.addEventListener('DOMContentLoaded', revealsNoScroll);
     return;
   }
 
-  // âncoras (proporção da tela) durante a fase "flutuando no fundo"
+  // âncoras (posição na tela) durante a fase flutuando no fundo
   const ancoras = [
     { x: 0.14, y: 0.28, rot: -8 },
     { x: 0.72, y: 0.34, rot: 6 },
@@ -580,86 +580,130 @@ document.addEventListener('DOMContentLoaded', revealsNoScroll);
   ];
 
   const lerp = (a, b, t) => a + (b - a) * t;
-  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
-  const smooth = (t) => t * t * (3 - 2 * t);
+  const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+  const easeOutBack  = (t) => { const c = 1.4; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
 
   function tamFoto() {
     const w = innerWidth < 520 ? 170 : 220;
     return { w, h: w * 4 / 3 };
   }
 
-  let sujo = true;
-  addEventListener('scroll', () => { sujo = true; }, { passive: true });
-  addEventListener('resize', () => { sujo = true; }, { passive: true });
-  setTimeout(() => { sujo = true; }, 600);
-  setTimeout(() => { sujo = true; }, 2000);
-
-  function atualizar() {
-    const sy = scrollY;
-    const vh = innerHeight, vw = innerWidth;
+  // três alvos por foto: escondida (fora), flutuando (âncora), pousada (slot)
+  function alvoEscondida(i) {
     const { w: fw, h: fh } = tamFoto();
+    const a = ancoras[i % ancoras.length];
+    return {
+      x: (i % 2 === 0) ? -fw - 100 : innerWidth + 100,
+      y: a.y * innerHeight - fh / 2 + 60,
+      rot: a.rot * 1.8,
+      scale: 0.55,
+      opacity: 0,
+    };
+  }
+  function alvoFlutuando(i) {
+    const { w: fw, h: fh } = tamFoto();
+    const a = ancoras[i % ancoras.length];
+    return {
+      x: a.x * innerWidth - fw / 2,
+      y: a.y * innerHeight - fh / 2,
+      rot: a.rot,
+      scale: 0.92,
+      opacity: 0.82,
+    };
+  }
+  function alvoPousada(i) {
+    const { w: fw, h: fh } = tamFoto();
+    const slot = grid.children[i];
+    if (!slot) return alvoFlutuando(i);
+    const r = slot.getBoundingClientRect();
+    return {
+      x: r.left + r.width / 2 - fw / 2,
+      y: r.top + r.height / 2 - fh / 2,
+      rot: 0,
+      scale: r.width / fw,
+      opacity: 1,
+    };
+  }
 
+  // estado inicial: escondida (sem animação inicial)
+  items.forEach((p, i) => {
+    p.estado = 'escondida';
+    p.pos = alvoEscondida(i);
+    p.transFrom = null;
+    p.transInicio = 0;
+    p.transDur = 1000;
+    p.transEase = easeOutCubic;
+    aplicar(p);
+  });
+
+  function aplicar(p) {
+    p.el.style.transform = `translate(${p.pos.x.toFixed(1)}px, ${p.pos.y.toFixed(1)}px) rotate(${p.pos.rot.toFixed(2)}deg) scale(${p.pos.scale.toFixed(3)})`;
+    p.el.style.opacity = p.pos.opacity.toFixed(3);
+  }
+
+  function tick(t) {
+    const sy = scrollY;
     const galRect = galSection.getBoundingClientRect();
     const galAbsTop = sy + galRect.top;
+    const landThresh = galAbsTop - innerHeight * 0.35;
 
-    // aterrissagem começa quando a galeria está 80vh abaixo, termina a 15vh
-    const landStart = galAbsTop - vh * 0.8;
-    const landEnd = galAbsTop - vh * 0.15;
-    const landP = smooth(clamp((sy - landStart) / Math.max(1, landEnd - landStart), 0, 1));
+    items.forEach((p, i) => {
+      const introThresh = innerHeight * (0.35 + i * 0.42);
 
-    for (let i = 0; i < items.length; i++) {
-      const p = items[i];
-      // cada foto introduz num ponto diferente do scroll
-      const introY = vh * (0.55 + i * 0.45);
-      const introP = smooth(clamp((sy - introY) / (vh * 0.45), 0, 1));
+      let alvoEstado;
+      if (sy >= landThresh) alvoEstado = 'pousada';
+      else if (sy >= introThresh) alvoEstado = 'flutuando';
+      else alvoEstado = 'escondida';
 
-      const a = ancoras[i % ancoras.length];
-      const ax = a.x * vw - fw / 2;
-      const ay = a.y * vh - fh / 2;
-
-      // posição inicial fora da tela (alterna lado)
-      const startX = (i % 2 === 0) ? -fw - 60 : vw + 60;
-      const startY = ay + 80;
-
-      // drift de parallax suave durante a fase flutuante
-      const drift = -((sy - introY) * 0.08) * introP;
-
-      const flX = lerp(startX, ax, introP);
-      const flY = lerp(startY, ay, introP) + drift;
-      const flRot = lerp(a.rot * 1.5, a.rot, introP);
-      const flOpacity = introP * 0.82;
-      const flScale = lerp(0.65, 0.92, introP);
-
-      // posição final no slot da galeria
-      const slot = grid.children[i];
-      let slotX = ax, slotY = ay, scaleAlvo = 1;
-      if (slot) {
-        const sr = slot.getBoundingClientRect();
-        slotX = sr.left + sr.width / 2 - fw / 2;
-        slotY = sr.top + sr.height / 2 - fh / 2;
-        // pequena correção de escala se o slot tem tamanho diferente
-        scaleAlvo = sr.width / fw;
+      // mudança de estado dispara nova transição (tempo fixo, não scroll-linkado)
+      if (alvoEstado !== p.estado) {
+        p.transFrom = { ...p.pos };
+        p.transInicio = t;
+        if (p.estado === 'escondida' && alvoEstado === 'flutuando') {
+          // ENTRADA: mais longa, com bounce
+          p.transDur = 1100;
+          p.transEase = easeOutBack;
+        } else {
+          p.transDur = 900;
+          p.transEase = easeOutCubic;
+        }
+        p.estado = alvoEstado;
       }
 
-      const x = lerp(flX, slotX, landP);
-      const y = lerp(flY, slotY, landP);
-      const rot = lerp(flRot, 0, landP);
-      const scale = lerp(flScale, scaleAlvo, landP);
-      const opacity = lerp(flOpacity, 1, landP);
+      // alvo atual (slot pode mover com scroll → recalcula sempre)
+      const target =
+        alvoEstado === 'escondida' ? alvoEscondida(i) :
+        alvoEstado === 'flutuando' ? alvoFlutuando(i) :
+                                     alvoPousada(i);
 
-      p.el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) rotate(${rot.toFixed(2)}deg) scale(${scale.toFixed(3)})`;
-      p.el.style.opacity = opacity.toFixed(3);
+      const elapsed = t - p.transInicio;
+      if (elapsed < p.transDur) {
+        const u = elapsed / p.transDur;
+        const e = p.transEase(u);
+        p.pos.x = lerp(p.transFrom.x, target.x, e);
+        p.pos.y = lerp(p.transFrom.y, target.y, e);
+        p.pos.rot = lerp(p.transFrom.rot, target.rot, e);
+        p.pos.scale = lerp(p.transFrom.scale, target.scale, e);
+        p.pos.opacity = lerp(p.transFrom.opacity, target.opacity, e);
+      } else {
+        p.pos = target;
+      }
+      aplicar(p);
 
-      if (landP > 0.95) p.el.classList.add('aterrissada');
-      else p.el.classList.remove('aterrissada');
-    }
+      // classes pra ligar a flutuação CSS no cartão e a clicabilidade
+      if (alvoEstado === 'escondida') {
+        p.el.classList.remove('visivel', 'aterrissada');
+      } else if (alvoEstado === 'flutuando') {
+        p.el.classList.add('visivel');
+        p.el.classList.remove('aterrissada');
+      } else {
+        p.el.classList.add('visivel', 'aterrissada');
+      }
+    });
+
+    requestAnimationFrame(tick);
   }
-
-  function loop() {
-    if (sujo) { atualizar(); sujo = false; }
-    requestAnimationFrame(loop);
-  }
-  loop();
+  requestAnimationFrame(tick);
 })();
 
 function abrirLightbox(src, legenda) {

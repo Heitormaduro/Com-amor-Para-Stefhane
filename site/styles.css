@@ -566,21 +566,23 @@ body.transicao .medalha-brilho::before { animation-play-state: paused; }
 }
 .foto-bg.aterrissada:hover .foto-bg__cartao figcaption { opacity: 1; transform: translateY(0); }
 
-/* ----- FLUTUAÇÃO: cada cartão balança levinho quando pousou ----- */
-.foto-bg.aterrissada .foto-bg__cartao {
-  animation: flutuaFoto 5s ease-in-out infinite;
+/* ----- FLUTUAÇÃO: o cartão se mexe sempre que a foto está visível ----- */
+.foto-bg.visivel .foto-bg__cartao {
+  animation-name: flutuaFoto;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
 }
 @keyframes flutuaFoto {
-  0%, 100% { transform: translateY(0) rotate(-0.4deg); }
-  50%       { transform: translateY(-14px) rotate(0.5deg); }
+  0%, 100% { transform: translateY(0) rotate(-0.5deg); }
+  50%       { transform: translateY(-14px) rotate(0.6deg); }
 }
 /* tempos diferentes por foto pra parecer orgânico (cada uma no seu ritmo) */
-.foto-bg:nth-of-type(1).aterrissada .foto-bg__cartao { animation-duration: 5.0s; animation-delay: 0s; }
-.foto-bg:nth-of-type(2).aterrissada .foto-bg__cartao { animation-duration: 5.6s; animation-delay: -0.8s; }
-.foto-bg:nth-of-type(3).aterrissada .foto-bg__cartao { animation-duration: 4.7s; animation-delay: -1.7s; }
-.foto-bg:nth-of-type(4).aterrissada .foto-bg__cartao { animation-duration: 5.4s; animation-delay: -2.5s; animation-direction: reverse; }
-.foto-bg:nth-of-type(5).aterrissada .foto-bg__cartao { animation-duration: 5.2s; animation-delay: -3.4s; }
-.foto-bg:nth-of-type(6).aterrissada .foto-bg__cartao { animation-duration: 4.8s; animation-delay: -4.2s; animation-direction: reverse; }
+.foto-bg:nth-of-type(1) .foto-bg__cartao { animation-duration: 5.0s; animation-delay: 0s; }
+.foto-bg:nth-of-type(2) .foto-bg__cartao { animation-duration: 5.6s; animation-delay: -0.8s; }
+.foto-bg:nth-of-type(3) .foto-bg__cartao { animation-duration: 4.7s; animation-delay: -1.7s; }
+.foto-bg:nth-of-type(4) .foto-bg__cartao { animation-duration: 5.4s; animation-delay: -2.5s; animation-direction: reverse; }
+.foto-bg:nth-of-type(5) .foto-bg__cartao { animation-duration: 5.2s; animation-delay: -3.4s; }
+.foto-bg:nth-of-type(6) .foto-bg__cartao { animation-duration: 4.8s; animation-delay: -4.2s; animation-direction: reverse; }
 
 /* ----- PLACEHOLDER (quando ainda não tem foto) ----- */
 .foto-bg.foto-bg--vazia .foto-bg__cartao { display: grid; place-items: center; }
