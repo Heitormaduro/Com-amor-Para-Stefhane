@@ -514,13 +514,16 @@ body.transicao .medalha-brilho::before { animation-play-state: paused; }
 /* o conteúdo do site precisa flutuar ACIMA das fotos do fundo */
 #conteudo { position: relative; z-index: 1; }
 
-/* a galeria final (climax): só placeholders (slots) onde as fotos pousam */
-.galeria { display: grid; grid-template-columns: repeat(auto-fit, 220px);
-  gap: 26px; justify-content: center; margin-top: 36px; }
-.foto-slot { width: 220px; height: 294px; }
+/* o mural (climax): slots reservam onde cada polaroid pousa.
+   altura de cada slot é definida via JS (proporção real da foto → masonry). */
+.galeria { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start;
+  gap: 28px 36px; margin-top: 48px; }
+.foto-slot { width: 200px; flex: 0 0 auto; }
+.foto-slot:nth-child(even) { margin-top: 36px; }   /* escalonado = cara de mural */
 @media (max-width: 520px) {
-  .galeria { grid-template-columns: repeat(auto-fit, 170px); }
-  .foto-slot { width: 170px; height: 227px; }
+  .galeria { gap: 20px 22px; }
+  .foto-slot { width: 150px; }
+  .foto-slot:nth-child(even) { margin-top: 22px; }
 
   /* hero: contém os corações do buquê pra não invadirem o nome/texto */
   .hero__arte { min-height: 250px; margin-bottom: 6px; }
@@ -539,46 +542,62 @@ body.transicao .medalha-brilho::before { animation-play-state: paused; }
   pointer-events: none; z-index: 0;
   overflow: hidden;
 }
-/* wrapper externo: o JS posiciona aqui (transform/opacity) */
+/* wrapper externo: o JS posiciona aqui (transform). largura fixa, altura natural
+   (a polaroid define a altura conforme a proporção da foto). */
 .foto-bg {
   position: absolute; top: 0; left: 0;
-  width: 220px; height: 294px;
+  width: 200px;
   opacity: 0;
   will-change: transform, opacity;
+  transform-origin: top left;
 }
 @media (max-width: 520px) {
-  .foto-bg { width: 170px; height: 227px; }
+  .foto-bg { width: 150px; }
 }
 
-/* cartão interno: visual + flutuação por CSS */
+/* ===== POLAROID: frame creme, foto na janela, legenda embaixo ===== */
 .foto-bg__cartao {
-  position: absolute; inset: 0;
-  border-radius: var(--raio); overflow: hidden;
-  background: linear-gradient(160deg, #4a1024 0%, #2a0810 55%, #1a0509 100%);
-  border: 1px solid rgba(255, 143, 163, 0.18);
+  position: relative;
+  background: linear-gradient(168deg, #fffdfb 0%, #fff2f6 100%);
+  border-radius: 7px;
+  padding: 11px 11px 0;
   box-shadow:
-    0 16px 34px rgba(0, 0, 0, .6),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  transition: box-shadow .35s, border-color .35s;
-  display: grid; place-items: center;
+    0 16px 34px rgba(0, 0, 0, .55),
+    0 4px 10px rgba(0, 0, 0, .3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  transition: box-shadow .35s, transform .35s;
 }
-.foto-bg__cartao img { width: 100%; height: 100%; object-fit: cover; display: block; grid-area: 1/1; }
+/* fita adesiva no topo (charme de mural) */
+.foto-bg__cartao::before {
+  content: ""; position: absolute; top: -8px; left: 50%;
+  transform: translateX(-50%) rotate(-2.5deg);
+  width: 56px; height: 17px;
+  background: rgba(255, 190, 208, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, .16);
+}
+/* janela da foto — a proporção (aspect-ratio) é setada no load = proporção real
+   da imagem, então object-fit:cover preenche SEM cortar nada */
+.polaroid__janela {
+  position: relative; width: 100%; aspect-ratio: 3 / 4;
+  background: linear-gradient(160deg, #3a0d1e, #220810);
+  border-radius: 3px; overflow: hidden;
+}
+.polaroid__janela img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .foto-bg__cartao figcaption {
-  position: absolute; left:0; right:0; bottom:0; grid-area: 1/1; align-self: end;
-  padding: 40px 14px 14px;
-  background: linear-gradient(transparent, rgba(20,5,9,.95));
-  color: #fff; font-size: .92rem; text-align: left;
-  opacity: 0; transition: opacity .35s; transform: translateY(8px);
+  font-family: var(--f-script); color: #c0335a; text-align: center;
+  font-size: 1.2rem; line-height: 1.15; padding: 9px 6px 13px;
 }
+@media (max-width: 520px) { .foto-bg__cartao figcaption { font-size: 1rem; padding: 7px 4px 11px; } }
+
 .foto-bg.aterrissada { pointer-events: auto; cursor: pointer; }
+.foto-bg.aterrissada:hover { z-index: 5; }
 .foto-bg.aterrissada:hover .foto-bg__cartao {
   box-shadow:
-    0 36px 80px rgba(255, 77, 109, .55),
-    0 10px 24px rgba(255, 77, 109, .25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18);
-  border-color: rgba(255, 143, 163, 0.45);
+    0 30px 64px rgba(255, 77, 109, .5),
+    0 8px 18px rgba(0, 0, 0, .35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
-.foto-bg.aterrissada:hover .foto-bg__cartao figcaption { opacity: 1; transform: translateY(0); }
 
 /* ----- FLUTUAÇÃO: o cartão se mexe sempre que a foto está visível ----- */
 .foto-bg.visivel .foto-bg__cartao {
@@ -587,8 +606,8 @@ body.transicao .medalha-brilho::before { animation-play-state: paused; }
   animation-timing-function: ease-in-out;
 }
 @keyframes flutuaFoto {
-  0%, 100% { transform: translateY(0) rotate(-0.5deg); }
-  50%       { transform: translateY(-14px) rotate(0.6deg); }
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-10px); }
 }
 /* tempos diferentes por foto pra parecer orgânico (cada uma no seu ritmo) */
 .foto-bg:nth-of-type(1) .foto-bg__cartao { animation-duration: 5.0s; animation-delay: 0s; }
@@ -598,21 +617,14 @@ body.transicao .medalha-brilho::before { animation-play-state: paused; }
 .foto-bg:nth-of-type(5) .foto-bg__cartao { animation-duration: 5.2s; animation-delay: -3.4s; }
 .foto-bg:nth-of-type(6) .foto-bg__cartao { animation-duration: 4.8s; animation-delay: -4.2s; animation-direction: reverse; }
 
-/* ----- PLACEHOLDER (quando ainda não tem foto) ----- */
-.foto-bg.foto-bg--vazia .foto-bg__cartao { display: grid; place-items: center; }
+/* ----- PLACEHOLDER (quando ainda não tem foto) — dentro da janela ----- */
+.polaroid__janela.vazia { display: grid; place-items: center; }
 .foto__placeholder {
-  display: flex; flex-direction: column; align-items: center; gap: 14px;
-  padding: 20px; text-align: center; max-width: 90%;
-}
-.placeholder__moldura {
-  width: 78px; height: 78px; border-radius: 50%;
-  display: grid; place-items: center;
-  background: radial-gradient(circle at 35% 35%, rgba(255,77,109,.18), rgba(255,77,109,.04) 65%, transparent 90%);
-  border: 1px dashed rgba(255, 143, 163, 0.5);
-  box-shadow: inset 0 0 14px rgba(255,77,109,.12);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 14px; text-align: center;
 }
 .placeholder__icone {
-  font-size: 2.1rem; line-height: 1;
+  font-size: 2rem; line-height: 1;
   /* sem drop-shadow: estes ícones se movem toda frame no fundo durante o
      scroll — a sombra-glow repintava tudo e travava. */
   animation: pulsaPlace 3s ease-in-out infinite;
@@ -623,12 +635,16 @@ body.transicao .medalha-brilho::before { animation-play-state: paused; }
 }
 .placeholder__label {
   font-family: var(--f-script); color: var(--rosa-claro);
-  font-size: 1.35rem; line-height: 1.2; margin: 0;
+  font-size: 1.15rem; line-height: 1.1; margin: 0;
 }
 .placeholder__path {
   font-family: ui-monospace, 'Cascadia Mono', 'Consolas', monospace;
-  color: var(--texto-suave); font-size: 0.7rem; letter-spacing: 0.5px;
-  opacity: 0.7; margin: 0; word-break: break-all;
+  color: var(--texto-suave); font-size: 0.6rem; letter-spacing: 0.3px;
+  opacity: 0.65; margin: 0; word-break: break-all;
+}
+@media (max-width: 520px) {
+  .placeholder__label { font-size: .95rem; }
+  .placeholder__path { font-size: .52rem; }
 }
 
 /* ========================== CARDS =========================== */

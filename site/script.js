@@ -511,36 +511,48 @@ document.addEventListener('DOMContentLoaded', revealsNoScroll);
 
   const items = [];
   CONFIG.fotos.forEach((f, i) => {
-    // foto flutuante (wrapper externo controlado por JS)
+    // wrapper externo (o JS posiciona via transform) — largura fixa, altura natural
     const el = document.createElement('figure');
     el.className = 'foto-bg';
     el.dataset.idx = String(i);
 
-    // cartão interno (controlado por CSS — flutuação suave quando aterrissa)
+    // a POLAROID (frame creme com legenda embaixo)
     const cartao = document.createElement('div');
     cartao.className = 'foto-bg__cartao';
 
+    // janela da foto: a proporção é setada no load = proporção REAL da imagem,
+    // então a foto preenche a janela sem cortar nada
+    const janela = document.createElement('div');
+    janela.className = 'polaroid__janela';
+
     const img = new Image();
     img.src = f.arquivo; img.alt = f.legenda || ''; img.loading = 'lazy';
-    cartao.appendChild(img);
+    janela.appendChild(img);
 
     const leg = document.createElement('figcaption');
     leg.textContent = f.legenda || '';
-    cartao.appendChild(leg);
 
+    cartao.appendChild(janela);
+    cartao.appendChild(leg);
     el.appendChild(cartao);
 
     let vazia = false;
+    img.onload = () => {
+      if (img.naturalWidth && img.naturalHeight) {
+        janela.style.aspectRatio = img.naturalWidth + ' / ' + img.naturalHeight;
+      }
+      medirItem(i);
+    };
     img.onerror = () => {
       vazia = true;
-      el.classList.add('foto-bg--vazia');
-      cartao.innerHTML = `
+      janela.classList.add('vazia');
+      janela.innerHTML = `
         <div class="foto__placeholder">
-          <span class="placeholder__moldura"><span class="placeholder__icone">🌹</span></span>
-          <p class="placeholder__label">uma foto sua aqui</p>
+          <span class="placeholder__icone">🌹</span>
+          <p class="placeholder__label">uma foto<br>sua aqui</p>
           <p class="placeholder__path">${f.arquivo}</p>
-        </div>
-      `;
+        </div>`;
+      medirItem(i);
     };
 
     el.addEventListener('click', () => {
@@ -548,14 +560,27 @@ document.addEventListener('DOMContentLoaded', revealsNoScroll);
     });
     bgCont.appendChild(el);
 
-    // slot placeholder na galeria (reserva o espaço pra foto pousar)
+    // slot reserva o espaço na galeria onde a polaroid pousa (altura via JS)
     const slot = document.createElement('div');
     slot.className = 'foto-slot';
     slot.dataset.idx = String(i);
     grid.appendChild(slot);
 
-    items.push({ el });
+    items.push({ el, slot, fw: 200, fh: 280 });
   });
+
+  // mede o tamanho real de cada polaroid e reserva o slot igual (mural masonry)
+  function medirItem(i) {
+    const p = items[i];
+    if (!p) return;
+    p.fw = p.el.offsetWidth || p.fw;
+    p.fh = p.el.offsetHeight || p.fh;
+    p.slot.style.width = p.fw + 'px';
+    p.slot.style.height = p.fh + 'px';
+  }
+  function medirTudo() { for (let i = 0; i < items.length; i++) medirItem(i); }
+  medirTudo();
+  addEventListener('resize', medirTudo);
 
   if (semMov) {
     // sem animação: já mostra direto nos slots
@@ -569,59 +594,57 @@ document.addEventListener('DOMContentLoaded', revealsNoScroll);
     return;
   }
 
-  // âncoras (posição na tela) durante a fase flutuando no fundo
+  // âncoras espalhadas pelas bordas (não se sobrepõem e deixam o centro pro
+  // conteúdo). Preenchem o fundo de forma equilibrada durante o scroll.
   const ancoras = [
-    { x: 0.14, y: 0.28, rot: -8 },
-    { x: 0.72, y: 0.34, rot: 6 },
-    { x: 0.18, y: 0.62, rot: 4 },
-    { x: 0.78, y: 0.55, rot: -5 },
-    { x: 0.08, y: 0.45, rot: -3 },
-    { x: 0.68, y: 0.22, rot: 7 },
+    { x: 0.11, y: 0.22, rot: -5 },
+    { x: 0.85, y: 0.18, rot: 5 },
+    { x: 0.07, y: 0.62, rot: -3 },
+    { x: 0.90, y: 0.58, rot: 4 },
+    { x: 0.20, y: 0.85, rot: -4 },
+    { x: 0.76, y: 0.84, rot: 6 },
   ];
+  // inclinação de cada polaroid quando pousa no mural (cara de parede de fotos)
+  const tiltMural = [-5, 4, -3, 5, -4, 3];
 
   const lerp = (a, b, t) => a + (b - a) * t;
   const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
   const easeOutBack  = (t) => { const c = 1.4; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
 
-  function tamFoto() {
-    const w = innerWidth < 520 ? 170 : 220;
-    return { w, h: w * 4 / 3 };
-  }
-
   // três alvos por foto: escondida (fora), flutuando (âncora), pousada (slot)
   function alvoEscondida(i) {
-    const { w: fw, h: fh } = tamFoto();
+    const p = items[i];
     const a = ancoras[i % ancoras.length];
     return {
-      x: (i % 2 === 0) ? -fw - 100 : innerWidth + 100,
-      y: a.y * innerHeight - fh / 2 + 60,
+      x: (i % 2 === 0) ? -p.fw - 100 : innerWidth + 100,
+      y: a.y * innerHeight - p.fh / 2 + 60,
       rot: a.rot * 1.8,
-      scale: 0.55,
+      scale: 0.6,
       opacity: 0,
     };
   }
   function alvoFlutuando(i) {
-    const { w: fw, h: fh } = tamFoto();
+    const p = items[i];
     const a = ancoras[i % ancoras.length];
     return {
-      x: a.x * innerWidth - fw / 2,
-      y: a.y * innerHeight - fh / 2,
+      x: a.x * innerWidth - p.fw / 2,
+      y: a.y * innerHeight - p.fh / 2,
       rot: a.rot,
-      scale: 0.92,
-      opacity: 0.82,
+      scale: 0.8,          // menor no fundo = ambiente, mais sutil
+      opacity: 0.5,
     };
   }
   function alvoPousada(i, rectCache) {
-    const { w: fw, h: fh } = tamFoto();
+    const p = items[i];
     const slot = grid.children[i];
     if (!slot) return alvoFlutuando(i);
     // usa rect já lido (fase de leitura em lote) pra não forçar layout no meio das escritas
     const r = rectCache || slot.getBoundingClientRect();
     return {
-      x: r.left + r.width / 2 - fw / 2,
-      y: r.top + r.height / 2 - fh / 2,
-      rot: 0,
-      scale: r.width / fw,
+      x: r.left + r.width / 2 - p.fw / 2,
+      y: r.top + r.height / 2 - p.fh / 2,
+      rot: tiltMural[i % tiltMural.length],
+      scale: r.width / p.fw,
       opacity: 1,
     };
   }
