@@ -611,11 +611,12 @@ document.addEventListener('DOMContentLoaded', revealsNoScroll);
       opacity: 0.82,
     };
   }
-  function alvoPousada(i) {
+  function alvoPousada(i, rectCache) {
     const { w: fw, h: fh } = tamFoto();
     const slot = grid.children[i];
     if (!slot) return alvoFlutuando(i);
-    const r = slot.getBoundingClientRect();
+    // usa rect já lido (fase de leitura em lote) pra não forçar layout no meio das escritas
+    const r = rectCache || slot.getBoundingClientRect();
     return {
       x: r.left + r.width / 2 - fw / 2,
       y: r.top + r.height / 2 - fh / 2,
@@ -641,40 +642,59 @@ document.addEventListener('DOMContentLoaded', revealsNoScroll);
     p.el.style.opacity = p.pos.opacity.toFixed(3);
   }
 
+  let ultimoSy = -1;
   function tick(t) {
     const sy = scrollY;
+
+    // ---- LEITURA (em lote, antes de qualquer escrita) ----
     const galRect = galSection.getBoundingClientRect();
-    const galAbsTop = sy + galRect.top;
-    const landThresh = galAbsTop - innerHeight * 0.35;
+    const landThresh = (sy + galRect.top) - innerHeight * 0.35;
 
-    items.forEach((p, i) => {
+    // 1) decide o estado-alvo de cada foto e detecta se há trabalho a fazer
+    let precisaTrabalho = sy !== ultimoSy; // scroll mexeu → slots mexeram → recalcula
+    for (let i = 0; i < items.length; i++) {
+      const p = items[i];
       const introThresh = innerHeight * (0.35 + i * 0.42);
+      const alvoEstado = sy >= landThresh ? 'pousada'
+                       : sy >= introThresh ? 'flutuando'
+                       : 'escondida';
 
-      let alvoEstado;
-      if (sy >= landThresh) alvoEstado = 'pousada';
-      else if (sy >= introThresh) alvoEstado = 'flutuando';
-      else alvoEstado = 'escondida';
-
-      // mudança de estado dispara nova transição (tempo fixo, não scroll-linkado)
       if (alvoEstado !== p.estado) {
         p.transFrom = { ...p.pos };
         p.transInicio = t;
         if (p.estado === 'escondida' && alvoEstado === 'flutuando') {
-          // ENTRADA: mais longa, com bounce
-          p.transDur = 1100;
-          p.transEase = easeOutBack;
+          p.transDur = 1100; p.transEase = easeOutBack;   // ENTRADA com bounce
         } else {
-          p.transDur = 900;
-          p.transEase = easeOutCubic;
+          p.transDur = 900; p.transEase = easeOutCubic;
         }
         p.estado = alvoEstado;
+        precisaTrabalho = true;
       }
+      p._alvo = alvoEstado;
+      if (t - p.transInicio < p.transDur) precisaTrabalho = true; // transição rolando
+    }
+    ultimoSy = sy;
 
-      // alvo atual (slot pode mover com scroll → recalcula sempre)
+    // nada mudou (parado, sem transição) → não toca no DOM, economiza CPU
+    if (!precisaTrabalho) { requestAnimationFrame(tick); return; }
+
+    // 2) lê os rects dos slots que vão receber foto — tudo junto, sem escrever no meio
+    const slotRects = [];
+    for (let i = 0; i < items.length; i++) {
+      if (items[i]._alvo === 'pousada') {
+        const slot = grid.children[i];
+        slotRects[i] = slot ? slot.getBoundingClientRect() : null;
+      }
+    }
+
+    // ---- ESCRITA (só transforms/classes, sem ler layout) ----
+    for (let i = 0; i < items.length; i++) {
+      const p = items[i];
+      const alvoEstado = p._alvo;
       const target =
         alvoEstado === 'escondida' ? alvoEscondida(i) :
         alvoEstado === 'flutuando' ? alvoFlutuando(i) :
-                                     alvoPousada(i);
+                                     alvoPousada(i, slotRects[i]);
 
       const elapsed = t - p.transInicio;
       if (elapsed < p.transDur) {
@@ -690,7 +710,6 @@ document.addEventListener('DOMContentLoaded', revealsNoScroll);
       }
       aplicar(p);
 
-      // classes pra ligar a flutuação CSS no cartão e a clicabilidade
       if (alvoEstado === 'escondida') {
         p.el.classList.remove('visivel', 'aterrissada');
       } else if (alvoEstado === 'flutuando') {
@@ -699,7 +718,7 @@ document.addEventListener('DOMContentLoaded', revealsNoScroll);
       } else {
         p.el.classList.add('visivel', 'aterrissada');
       }
-    });
+    }
 
     requestAnimationFrame(tick);
   }

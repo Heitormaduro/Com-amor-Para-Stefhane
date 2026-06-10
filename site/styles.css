@@ -44,17 +44,19 @@ html.anim [data-anim] { opacity: 0; }
     radial-gradient(900px 600px at 0% 100%, #520f28 0%, transparent 55%),
     linear-gradient(160deg, var(--bg2) 0%, var(--bg1) 45%, var(--bg0) 100%);
 }
+/* glow suave SEM filter:blur — o gradient já dá a maciez (blur de 70px
+   travava o scroll). Falloff mais gradual compensa a perda do blur. */
 .bg__orb {
   position: absolute; border-radius: 50%;
-  filter: blur(70px); opacity: .5;
+  opacity: .55;
   will-change: transform;
 }
-.bg__orb--1 { width: 520px; height: 520px; top: -120px; right: -80px;
-  background: radial-gradient(circle, rgba(255,77,109,.55), transparent 70%); animation: flutua1 16s ease-in-out infinite; }
-.bg__orb--2 { width: 460px; height: 460px; bottom: -140px; left: -100px;
-  background: radial-gradient(circle, rgba(201,24,74,.5), transparent 70%); animation: flutua2 20s ease-in-out infinite; }
-.bg__orb--3 { width: 380px; height: 380px; top: 40%; left: 55%;
-  background: radial-gradient(circle, rgba(255,143,163,.3), transparent 70%); animation: flutua1 24s ease-in-out infinite; }
+.bg__orb--1 { width: 620px; height: 620px; top: -160px; right: -120px;
+  background: radial-gradient(circle, rgba(255,77,109,.5) 0%, rgba(255,77,109,.2) 38%, transparent 70%); animation: flutua1 16s ease-in-out infinite; }
+.bg__orb--2 { width: 560px; height: 560px; bottom: -180px; left: -140px;
+  background: radial-gradient(circle, rgba(201,24,74,.46) 0%, rgba(201,24,74,.18) 38%, transparent 70%); animation: flutua2 20s ease-in-out infinite; }
+.bg__orb--3 { width: 460px; height: 460px; top: 40%; left: 55%;
+  background: radial-gradient(circle, rgba(255,143,163,.28) 0%, rgba(255,143,163,.12) 40%, transparent 72%); animation: flutua1 24s ease-in-out infinite; }
 @keyframes flutua1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-40px,40px)} }
 @keyframes flutua2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(50px,-30px)} }
 .bg__grão { position:absolute; inset:0; opacity:.05;
@@ -62,7 +64,7 @@ html.anim [data-anim] { opacity: 0; }
   background-size: 4px 4px; }
 
 /* ----- BOKEH: luzinhas desfocadas em vários cantos pra dar profundidade ----- */
-.bg__bokeh { position: absolute; border-radius: 50%; filter: blur(40px); opacity: .42; pointer-events: none;
+.bg__bokeh { position: absolute; border-radius: 50%; opacity: .42; pointer-events: none;
   will-change: transform; animation: bokehDrift 18s ease-in-out infinite; }
 .bg__bokeh--a { width: 220px; height: 220px; top: 12%; left: 6%;
   background: radial-gradient(circle, rgba(255,143,163,.65), transparent 70%); animation-delay: 0s; }
@@ -86,13 +88,16 @@ html.anim [data-anim] { opacity: 0; }
 .petalas { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; }
 
 /* ========================= VIDRO ============================ */
+/* vidro "fake": fundo translúcido em vez de backdrop-filter:blur (que
+   reborrava o fundo a cada frame e travava o scroll). O gradiente +
+   borda + sombra mantêm a cara de painel de vidro. */
 .vidro {
-  background: var(--vidro-bg);
+  background:
+    linear-gradient(160deg, rgba(255,255,255,.09), rgba(255,255,255,.03)),
+    rgba(40, 10, 22, 0.55);
   border: 1px solid var(--vidro-bd);
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
   border-radius: var(--raio);
-  box-shadow: 0 20px 50px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.08);
+  box-shadow: 0 14px 30px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.08);
 }
 
 /* ======================== ABERTURA ========================== */
@@ -202,8 +207,8 @@ html.anim [data-anim] { opacity: 0; }
 }
 .halo-aurora { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
   width: 100%; height: 100%; border-radius: 50%; pointer-events: none;
-  background: radial-gradient(circle, rgba(255,77,109,.6), rgba(255,77,109,0) 65%);
-  filter: blur(20px); animation: pulsaHalo 5s ease-in-out infinite; will-change: transform, opacity; }
+  background: radial-gradient(circle, rgba(255,77,109,.55) 0%, rgba(255,77,109,.18) 42%, rgba(255,77,109,0) 68%);
+  animation: pulsaHalo 5s ease-in-out infinite; will-change: transform, opacity; }
 @keyframes pulsaHalo {
   0%, 100% { opacity: .55; transform: translate(-50%,-50%) scale(1); }
   50% { opacity: 1; transform: translate(-50%,-50%) scale(1.12); }
@@ -277,12 +282,13 @@ body.transicao .medalha-brilho::before { animation-play-state: paused; }
   position: fixed; top: 0; left: 0; right: 0; z-index: 9000;
   display: flex; align-items: center; justify-content: space-between;
   gap: 18px; padding: 14px clamp(16px, 4vw, 48px);
-  transition: background .4s, backdrop-filter .4s, padding .4s, border-color .4s;
+  transition: background .4s, padding .4s, border-color .4s;
   border-bottom: 1px solid transparent;
 }
+/* fundo sólido (sem backdrop-filter:blur, que reblurrava o conteúdo
+   rolando embaixo do header a cada frame) */
 .header.solido {
-  background: rgba(22,6,10,.6);
-  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  background: rgba(20,6,11,.92);
   border-bottom: 1px solid var(--vidro-bd);
   padding-top: 10px; padding-bottom: 10px;
 }
@@ -351,18 +357,18 @@ body.transicao .medalha-brilho::before { animation-play-state: paused; }
 /* arte / centerpiece */
 .hero__arte { position: relative; display: grid; place-items: center; min-height: 420px; }
 .arte__halo { position: absolute; width: 360px; height: 360px; max-width: 80vw; max-height: 80vw;
-  border-radius: 50%; background: radial-gradient(circle, rgba(255,77,109,.55), transparent 65%);
-  filter: blur(20px); animation: pulsa 4s ease-in-out infinite; }
+  border-radius: 50%; background: radial-gradient(circle, rgba(255,77,109,.5) 0%, rgba(255,77,109,.18) 40%, transparent 68%);
+  animation: pulsa 4s ease-in-out infinite; }
 @keyframes pulsa { 0%,100%{transform:scale(1);opacity:.7} 50%{transform:scale(1.12);opacity:1} }
 .arte__ring { position: absolute; width: 320px; height: 320px; max-width: 72vw; max-height: 72vw;
   border-radius: 50%; background: conic-gradient(from 0deg, transparent, rgba(255,143,163,.5), transparent 60%);
   -webkit-mask: radial-gradient(transparent 58%, #000 60%); mask: radial-gradient(transparent 58%, #000 60%);
   animation: girar 14s linear infinite; }
 .arte__buque { font-size: clamp(8rem, 22vw, 13rem); position: relative; z-index: 2;
-  filter: drop-shadow(0 20px 40px rgba(0,0,0,.5)); animation: balança 6s ease-in-out infinite; will-change: transform; }
+  filter: drop-shadow(0 10px 16px rgba(0,0,0,.5)); animation: balança 6s ease-in-out infinite; will-change: transform; }
 @keyframes balança { 0%,100%{transform:translateY(0) rotate(-2deg)} 50%{transform:translateY(-16px) rotate(2deg)} }
 .arte__coracao { position: absolute; z-index: 3; font-size: 2.2rem; will-change: transform;
-  filter: drop-shadow(0 6px 16px rgba(255,77,109,.5)); }
+  filter: drop-shadow(0 4px 8px rgba(255,77,109,.45)); }
 .arte__coracao.c1 { top: 8%; left: 16%; animation: bóia 5s ease-in-out infinite; }
 .arte__coracao.c2 { top: 18%; right: 12%; font-size: 1.8rem; animation: bóia 6.5s ease-in-out infinite .5s; }
 .arte__coracao.c3 { bottom: 14%; left: 8%; font-size: 2.6rem; animation: bóia 5.8s ease-in-out infinite .2s; }
@@ -407,13 +413,12 @@ body.transicao .medalha-brilho::before { animation-play-state: paused; }
 .secao__glow {
   position: absolute; left: 50%; top: 45%; transform: translate(-50%,-50%);
   width: 75%; height: 60%; border-radius: 50%;
-  background: radial-gradient(ellipse, rgba(255,77,109,.22), transparent 70%);
-  filter: blur(50px); pointer-events: none; z-index: 0;
+  background: radial-gradient(ellipse, rgba(255,77,109,.22) 0%, rgba(255,77,109,.08) 45%, transparent 72%);
+  pointer-events: none; z-index: 0;
 }
 .secao--contador > *:not(.secao__glow):not(.flutua-coracao) { position: relative; z-index: 1; }
 
 .flutua-coracao { position: absolute; pointer-events: none; opacity: .45; user-select: none;
-  filter: drop-shadow(0 0 10px rgba(255,77,109,.55));
   animation: flutuaCor 12s ease-in-out infinite; will-change: transform; }
 .flutua-coracao.fc1 { top: 14%; left: 8%; font-size: 1.5rem; animation-delay: 0s; }
 .flutua-coracao.fc2 { top: 28%; right: 6%; font-size: 1.1rem; animation-delay: -3s; }
@@ -552,8 +557,7 @@ body.transicao .medalha-brilho::before { animation-play-state: paused; }
   background: linear-gradient(160deg, #4a1024 0%, #2a0810 55%, #1a0509 100%);
   border: 1px solid rgba(255, 143, 163, 0.18);
   box-shadow:
-    0 28px 60px rgba(0, 0, 0, .65),
-    0 8px 20px rgba(255, 77, 109, .08),
+    0 16px 34px rgba(0, 0, 0, .6),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
   transition: box-shadow .35s, border-color .35s;
   display: grid; place-items: center;
@@ -609,7 +613,8 @@ body.transicao .medalha-brilho::before { animation-play-state: paused; }
 }
 .placeholder__icone {
   font-size: 2.1rem; line-height: 1;
-  filter: drop-shadow(0 0 12px rgba(255, 77, 109, 0.55));
+  /* sem drop-shadow: estes ícones se movem toda frame no fundo durante o
+     scroll — a sombra-glow repintava tudo e travava. */
   animation: pulsaPlace 3s ease-in-out infinite;
 }
 @keyframes pulsaPlace {
