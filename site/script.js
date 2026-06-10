@@ -599,17 +599,39 @@ document.addEventListener('DOMContentLoaded', revealsNoScroll);
     fundo.className = 'fundo-fotos';
     fundo.setAttribute('aria-hidden', 'true');
 
+    const figsFundo = [];
+    const amplitudes = [];   // quanto cada foto desliza no parallax (px)
     for (let k = 0; k < ancoras.length && k < CONFIG.fotos.length; k++) {
       const fi = escolha[k % escolha.length] % CONFIG.fotos.length;
       const a = ancoras[k];
       const fig = montaPolaroid(CONFIG.fotos[fi], fi, 'pola--fundo');
       fig.style.left = a.x + '%';
       fig.style.top = a.y + '%';
-      fig.style.setProperty('--dur', (15 + k * 1.6) + 's');
-      fig.style.setProperty('--delay', (-k * 2.1) + 's');
+      fig.style.setProperty('--dur', (8 + k * 0.9) + 's');   // float mais rápido = visível
+      fig.style.setProperty('--delay', (-k * 1.7) + 's');
+      fig.style.setProperty('--din', (k * 0.12) + 's');      // entrada escalonada
       fundo.appendChild(fig);
+      figsFundo.push(fig);
+      // direções alternadas e amplitudes variadas pro parallax ficar orgânico
+      amplitudes.push((k % 2 ? 1 : -1) * (90 + (k % 3) * 45));
     }
     document.body.insertBefore(fundo, document.body.firstChild.nextSibling);
+
+    // PARALLAX: conforme rola, cada foto desliza (bounded) — dá sensação de vida.
+    // Leve: só roda durante o scroll, com rAF pra não pesar.
+    let agendado = false;
+    function parallax() {
+      const max = document.documentElement.scrollHeight - innerHeight;
+      const prog = max > 0 ? scrollY / max : 0;        // 0 (topo) → 1 (fim)
+      for (let k = 0; k < figsFundo.length; k++) {
+        figsFundo[k].style.setProperty('--py', ((prog - 0.5) * amplitudes[k]).toFixed(1) + 'px');
+      }
+      agendado = false;
+    }
+    addEventListener('scroll', () => {
+      if (!agendado) { agendado = true; requestAnimationFrame(parallax); }
+    }, { passive: true });
+    parallax();
   }
 })();
 
