@@ -583,55 +583,66 @@ document.addEventListener('DOMContentLoaded', revealsNoScroll);
     polas.forEach((p) => p.classList.add('pola--on'));
   }
 
-  // ---- FUNDO: punhado de fotos flutuando nas margens (ambiente) ----
+  // ---- FUNDO: fotos descem pelas margens e ENTRAM conforme o scroll ----
   if (!semMov) {
-    // âncoras só nas laterais (esq/dir) pra não ficar atrás do texto central
-    const ancoras = [
-      { x: 3,  y: 11 }, { x: 90, y: 8 },
-      { x: 5,  y: 40 }, { x: 91, y: 37 },
-      { x: 2,  y: 69 }, { x: 89, y: 66 },
-      { x: 7,  y: 92 }, { x: 92, y: 95 },
-    ];
-    // fotos espalhadas da lista (não precisa ser todas — é só ambiente)
-    const escolha = [0, 2, 4, 6, 8, 10, 12, 13];
+    // fotos pro fundo (alterna lados esq/dir descendo a página)
+    const escolha = [0, 2, 4, 6, 8, 10, 12, 13, 1, 5];
 
     const fundo = document.createElement('div');
     fundo.className = 'fundo-fotos';
     fundo.setAttribute('aria-hidden', 'true');
-
-    const figsFundo = [];
-    const amplitudes = [];   // quanto cada foto desliza no parallax (px)
-    for (let k = 0; k < ancoras.length && k < CONFIG.fotos.length; k++) {
-      const fi = escolha[k % escolha.length] % CONFIG.fotos.length;
-      const a = ancoras[k];
-      const fig = montaPolaroid(CONFIG.fotos[fi], fi, 'pola--fundo');
-      fig.style.left = a.x + '%';
-      fig.style.top = a.y + '%';
-      fig.style.setProperty('--dur', (8 + k * 0.9) + 's');   // float mais rápido = visível
-      fig.style.setProperty('--delay', (-k * 1.7) + 's');
-      fig.style.setProperty('--din', (k * 0.12) + 's');      // entrada escalonada
-      fundo.appendChild(fig);
-      figsFundo.push(fig);
-      // direções alternadas e amplitudes variadas pro parallax ficar orgânico
-      amplitudes.push((k % 2 ? 1 : -1) * (90 + (k % 3) * 45));
-    }
     document.body.insertBefore(fundo, document.body.firstChild.nextSibling);
 
-    // PARALLAX: conforme rola, cada foto desliza (bounded) — dá sensação de vida.
-    // Leve: só roda durante o scroll, com rAF pra não pesar.
-    let agendado = false;
-    function parallax() {
-      const max = document.documentElement.scrollHeight - innerHeight;
-      const prog = max > 0 ? scrollY / max : 0;        // 0 (topo) → 1 (fim)
-      for (let k = 0; k < figsFundo.length; k++) {
-        figsFundo[k].style.setProperty('--py', ((prog - 0.5) * amplitudes[k]).toFixed(1) + 'px');
-      }
-      agendado = false;
+    const figsFundo = [];
+    escolha.forEach((fi, k) => {
+      const f = CONFIG.fotos[fi % CONFIG.fotos.length];
+      const fig = montaPolaroid(f, fi, 'pola--fundo');
+      fig.dataset.lado = (k % 2) ? 'dir' : 'esq';
+      fig.style.setProperty('--dur', (8 + (k % 4) * 1.1) + 's');
+      fig.style.setProperty('--delay', (-(k % 5) * 1.3) + 's');
+      fundo.appendChild(fig);
+      figsFundo.push(fig);
+    });
+
+    // distribui as fotos ao longo da altura da página, nas laterais
+    function posicionar() {
+      const mob = innerWidth <= 520;
+      const docH = document.documentElement.scrollHeight;
+      fundo.style.height = docH + 'px';
+      const top0 = innerHeight * 0.92;            // começa depois do hero
+      const top1 = docH - innerHeight * 0.55;     // termina antes do rodapé
+      const n = figsFundo.length;
+      figsFundo.forEach((fig, k) => {
+        fig.style.top = (top0 + (top1 - top0) * (n > 1 ? k / (n - 1) : 0)) + 'px';
+        const dir = fig.dataset.lado === 'dir';
+        if (mob) {
+          // no celular as fotos espiam da borda (meio pra fora) pra não cobrir o texto
+          fig.style.left = dir ? 'auto' : '-38px';
+          fig.style.right = dir ? '-38px' : 'auto';
+          fig.style.setProperty('--from', (dir ? 38 : -38) + 'px');
+        } else {
+          fig.style.left = dir ? 'auto' : '14px';
+          fig.style.right = dir ? '14px' : 'auto';
+          fig.style.setProperty('--from', (dir ? 60 : -60) + 'px');
+        }
+      });
     }
-    addEventListener('scroll', () => {
-      if (!agendado) { agendado = true; requestAnimationFrame(parallax); }
-    }, { passive: true });
-    parallax();
+    posicionar();
+    addEventListener('resize', posicionar);
+    addEventListener('load', posicionar);
+    // as imagens mudam a altura da página ao carregar → recalcula depois
+    setTimeout(posicionar, 1200);
+    setTimeout(posicionar, 3000);
+
+    // entra/sai com o scroll (desliza da borda + fade) via IntersectionObserver
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((e) => e.target.classList.toggle('vista', e.isIntersecting));
+      }, { threshold: 0.25, rootMargin: '0px 0px -6% 0px' });
+      figsFundo.forEach((f) => io.observe(f));
+    } else {
+      figsFundo.forEach((f) => f.classList.add('vista'));
+    }
   }
 })();
 
