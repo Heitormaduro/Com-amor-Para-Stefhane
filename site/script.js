@@ -14,12 +14,20 @@ const CONFIG = {
 
   // 📸 Fotos: jogue os arquivos em site/fotos/ e liste aqui (nome + legenda fofa).
   fotos: [
-    { arquivo: 'fotos/foto1.jpg', legenda: 'Aqui começou tudo. 💕' },
-    { arquivo: 'fotos/foto2.jpg', legenda: 'Sua gargalhada é meu som favorito.' },
-    { arquivo: 'fotos/foto3.jpg', legenda: 'Eu nem precisei pensar pra te amar.' },
-    { arquivo: 'fotos/foto4.jpg', legenda: 'Com você o dia fica leve.' },
-    { arquivo: 'fotos/foto5.jpg', legenda: 'Minha pessoa preferida.' },
-    { arquivo: 'fotos/foto6.jpg', legenda: 'E isso é só o começo.' },
+    { arquivo: 'fotos/foto1.jpg',  legenda: 'aqui começou tudo, gatinha 💕' },
+    { arquivo: 'fotos/foto2.jpg',  legenda: 'sua gargalhada é meu som favorito' },
+    { arquivo: 'fotos/foto3.jpg',  legenda: 'eu nem precisei pensar pra te amar' },
+    { arquivo: 'fotos/foto4.jpg',  legenda: 'com você o dia fica leve' },
+    { arquivo: 'fotos/foto5.jpg',  legenda: 'minha pessoa preferida, sempre' },
+    { arquivo: 'fotos/foto6.jpg',  legenda: 'rezo todo dia agradecendo por você' },
+    { arquivo: 'fotos/foto7.jpg',  legenda: 'do seu lado é meu lugar' },
+    { arquivo: 'fotos/foto8.jpg',  legenda: 'olha a gente… eu te amo demais' },
+    { arquivo: 'fotos/foto9.jpg',  legenda: 'você é a melhor parte do meu dia' },
+    { arquivo: 'fotos/foto10.jpg', legenda: 'te escolheria de novo, mil vezes' },
+    { arquivo: 'fotos/foto11.jpg', legenda: 'esse sorriso me ganhou de vez' },
+    { arquivo: 'fotos/foto12.jpg', legenda: 'a gente combina demais, né?' },
+    { arquivo: 'fotos/foto13.jpg', legenda: 'guardo cada segundo desse' },
+    { arquivo: 'fotos/foto14.jpg', legenda: 'e isso é só o começo, viu 😏' },
   ],
 
   // ✍️ Frase que "digita sozinha" na seção da história.
@@ -493,37 +501,39 @@ document.addEventListener('DOMContentLoaded', revealsNoScroll);
   botoes.forEach((b, i) => b.addEventListener('click', () => abrir(i)));
 })();
 
-/* ---------- 10. Fotos no FUNDO seguindo o scroll ----------
-   As fotos vivem em position:fixed no fundo. Conforme a Stefhane rola, elas
-   APARECEM uma de cada vez vindo do lado, ficam flutuando no fundo, e quando
-   chegam na seção da Galeria (no fim) ATERRISSAM nos seus slots em grid.
+/* ---------- 10. Mural de polaroids + fotos no fundo ----------
+   MURAL: todas as fotos viram polaroids no grid da galeria, cada uma
+   revelando com um fade-up quando entra na tela. A proporção da janela
+   é setada no load = proporção real da foto, então nada é cortado.
+   FUNDO: um punhado de fotos flutua suave nas margens (só CSS), como um
+   "papel de parede" de momentos — sutil e sem embolar.
    ----------------------------------------------------------- */
-(function fotosFundo() {
-  const galSection = document.getElementById('galeria');
+(function muralEFundo() {
   const grid = document.getElementById('gridGaleria');
-  if (!galSection || !grid) return;
+  if (!grid) return;
 
-  // contêiner fixo que segura as fotos do fundo
-  const bgCont = document.createElement('div');
-  bgCont.className = 'fotos-bg';
-  bgCont.setAttribute('aria-hidden', 'true');
-  document.body.insertBefore(bgCont, document.body.firstChild.nextSibling);
+  // inclinações pra dar cara de parede de fotos (cada polaroid um pouco torta)
+  const TILTS = [-5, 4, -3, 5, -4, 3, -2, 6, -5, 2, -3, 4, -4, 3];
 
-  const items = [];
-  CONFIG.fotos.forEach((f, i) => {
-    // wrapper externo (o JS posiciona via transform) — largura fixa, altura natural
-    const el = document.createElement('figure');
-    el.className = 'foto-bg';
-    el.dataset.idx = String(i);
+  function placeholderHTML(arquivo) {
+    return `
+      <div class="foto__placeholder">
+        <span class="placeholder__icone">🌹</span>
+        <p class="placeholder__label">uma foto<br>sua aqui</p>
+        <p class="placeholder__path">${arquivo}</p>
+      </div>`;
+  }
 
-    // a POLAROID (frame creme com legenda embaixo)
+  function montaPolaroid(f, i, extraClass) {
+    const fig = document.createElement('figure');
+    fig.className = 'pola' + (extraClass ? ' ' + extraClass : '');
+    fig.style.setProperty('--tilt', TILTS[i % TILTS.length] + 'deg');
+
     const cartao = document.createElement('div');
-    cartao.className = 'foto-bg__cartao';
+    cartao.className = 'pola__cartao';
 
-    // janela da foto: a proporção é setada no load = proporção REAL da imagem,
-    // então a foto preenche a janela sem cortar nada
     const janela = document.createElement('div');
-    janela.className = 'polaroid__janela';
+    janela.className = 'pola__janela';
 
     const img = new Image();
     img.src = f.arquivo; img.alt = f.legenda || ''; img.loading = 'lazy';
@@ -534,218 +544,73 @@ document.addEventListener('DOMContentLoaded', revealsNoScroll);
 
     cartao.appendChild(janela);
     cartao.appendChild(leg);
-    el.appendChild(cartao);
+    fig.appendChild(cartao);
 
     let vazia = false;
     img.onload = () => {
       if (img.naturalWidth && img.naturalHeight) {
+        // proporção real da foto → sem corte, sem borda
         janela.style.aspectRatio = img.naturalWidth + ' / ' + img.naturalHeight;
       }
-      medirItem(i);
     };
     img.onerror = () => {
       vazia = true;
       janela.classList.add('vazia');
-      janela.innerHTML = `
-        <div class="foto__placeholder">
-          <span class="placeholder__icone">🌹</span>
-          <p class="placeholder__label">uma foto<br>sua aqui</p>
-          <p class="placeholder__path">${f.arquivo}</p>
-        </div>`;
-      medirItem(i);
+      janela.innerHTML = placeholderHTML(f.arquivo);
     };
 
-    el.addEventListener('click', () => {
-      if (!vazia && el.classList.contains('aterrissada')) abrirLightbox(f.arquivo, f.legenda);
-    });
-    bgCont.appendChild(el);
+    fig.addEventListener('click', () => { if (!vazia) abrirLightbox(f.arquivo, f.legenda); });
+    return fig;
+  }
 
-    // slot reserva o espaço na galeria onde a polaroid pousa (altura via JS)
-    const slot = document.createElement('div');
-    slot.className = 'foto-slot';
-    slot.dataset.idx = String(i);
-    grid.appendChild(slot);
-
-    items.push({ el, slot, fw: 200, fh: 280 });
+  // ---- MURAL: todas as fotos ----
+  const polas = [];
+  CONFIG.fotos.forEach((f, i) => {
+    const fig = montaPolaroid(f, i);
+    grid.appendChild(fig);
+    polas.push(fig);
   });
 
-  // mede o tamanho real de cada polaroid e reserva o slot igual (mural masonry)
-  function medirItem(i) {
-    const p = items[i];
-    if (!p) return;
-    p.fw = p.el.offsetWidth || p.fw;
-    p.fh = p.el.offsetHeight || p.fh;
-    p.slot.style.width = p.fw + 'px';
-    p.slot.style.height = p.fh + 'px';
-  }
-  function medirTudo() { for (let i = 0; i < items.length; i++) medirItem(i); }
-  medirTudo();
-  addEventListener('resize', medirTudo);
-
-  if (semMov) {
-    // sem animação: já mostra direto nos slots
-    items.forEach((p, i) => {
-      const slot = grid.children[i];
-      const r = slot.getBoundingClientRect();
-      p.el.style.transform = `translate(${r.left}px, ${r.top}px)`;
-      p.el.style.opacity = '1';
-      p.el.classList.add('aterrissada');
-    });
-    return;
+  // revela cada polaroid com fade-up quando entra na tela
+  if (!semMov && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) { e.target.classList.add('pola--on'); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+    polas.forEach((p) => io.observe(p));
+  } else {
+    polas.forEach((p) => p.classList.add('pola--on'));
   }
 
-  // âncoras espalhadas pelas bordas (não se sobrepõem e deixam o centro pro
-  // conteúdo). Preenchem o fundo de forma equilibrada durante o scroll.
-  const ancoras = [
-    { x: 0.11, y: 0.22, rot: -5 },
-    { x: 0.85, y: 0.18, rot: 5 },
-    { x: 0.07, y: 0.62, rot: -3 },
-    { x: 0.90, y: 0.58, rot: 4 },
-    { x: 0.20, y: 0.85, rot: -4 },
-    { x: 0.76, y: 0.84, rot: 6 },
-  ];
-  // inclinação de cada polaroid quando pousa no mural (cara de parede de fotos)
-  const tiltMural = [-5, 4, -3, 5, -4, 3];
+  // ---- FUNDO: punhado de fotos flutuando nas margens (ambiente) ----
+  if (!semMov) {
+    // âncoras só nas laterais (esq/dir) pra não ficar atrás do texto central
+    const ancoras = [
+      { x: 3,  y: 11 }, { x: 90, y: 8 },
+      { x: 5,  y: 40 }, { x: 91, y: 37 },
+      { x: 2,  y: 69 }, { x: 89, y: 66 },
+      { x: 7,  y: 92 }, { x: 92, y: 95 },
+    ];
+    // fotos espalhadas da lista (não precisa ser todas — é só ambiente)
+    const escolha = [0, 2, 4, 6, 8, 10, 12, 13];
 
-  const lerp = (a, b, t) => a + (b - a) * t;
-  const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
-  const easeOutBack  = (t) => { const c = 1.4; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
+    const fundo = document.createElement('div');
+    fundo.className = 'fundo-fotos';
+    fundo.setAttribute('aria-hidden', 'true');
 
-  // três alvos por foto: escondida (fora), flutuando (âncora), pousada (slot)
-  function alvoEscondida(i) {
-    const p = items[i];
-    const a = ancoras[i % ancoras.length];
-    return {
-      x: (i % 2 === 0) ? -p.fw - 100 : innerWidth + 100,
-      y: a.y * innerHeight - p.fh / 2 + 60,
-      rot: a.rot * 1.8,
-      scale: 0.6,
-      opacity: 0,
-    };
-  }
-  function alvoFlutuando(i) {
-    const p = items[i];
-    const a = ancoras[i % ancoras.length];
-    return {
-      x: a.x * innerWidth - p.fw / 2,
-      y: a.y * innerHeight - p.fh / 2,
-      rot: a.rot,
-      scale: 0.8,          // menor no fundo = ambiente, mais sutil
-      opacity: 0.5,
-    };
-  }
-  function alvoPousada(i, rectCache) {
-    const p = items[i];
-    const slot = grid.children[i];
-    if (!slot) return alvoFlutuando(i);
-    // usa rect já lido (fase de leitura em lote) pra não forçar layout no meio das escritas
-    const r = rectCache || slot.getBoundingClientRect();
-    return {
-      x: r.left + r.width / 2 - p.fw / 2,
-      y: r.top + r.height / 2 - p.fh / 2,
-      rot: tiltMural[i % tiltMural.length],
-      scale: r.width / p.fw,
-      opacity: 1,
-    };
-  }
-
-  // estado inicial: escondida (sem animação inicial)
-  items.forEach((p, i) => {
-    p.estado = 'escondida';
-    p.pos = alvoEscondida(i);
-    p.transFrom = { ...p.pos };
-    p.transInicio = 0;
-    p.transDur = 1000;
-    p.transEase = easeOutCubic;
-    aplicar(p);
-  });
-
-  function aplicar(p) {
-    p.el.style.transform = `translate(${p.pos.x.toFixed(1)}px, ${p.pos.y.toFixed(1)}px) rotate(${p.pos.rot.toFixed(2)}deg) scale(${p.pos.scale.toFixed(3)})`;
-    p.el.style.opacity = p.pos.opacity.toFixed(3);
-  }
-
-  let ultimoSy = -1;
-  function tick(t) {
-    const sy = scrollY;
-
-    // ---- LEITURA (em lote, antes de qualquer escrita) ----
-    const galRect = galSection.getBoundingClientRect();
-    const landThresh = (sy + galRect.top) - innerHeight * 0.35;
-
-    // 1) decide o estado-alvo de cada foto e detecta se há trabalho a fazer
-    let precisaTrabalho = sy !== ultimoSy; // scroll mexeu → slots mexeram → recalcula
-    for (let i = 0; i < items.length; i++) {
-      const p = items[i];
-      const introThresh = innerHeight * (0.35 + i * 0.42);
-      const alvoEstado = sy >= landThresh ? 'pousada'
-                       : sy >= introThresh ? 'flutuando'
-                       : 'escondida';
-
-      if (alvoEstado !== p.estado) {
-        p.transFrom = { ...p.pos };
-        p.transInicio = t;
-        if (p.estado === 'escondida' && alvoEstado === 'flutuando') {
-          p.transDur = 1100; p.transEase = easeOutBack;   // ENTRADA com bounce
-        } else {
-          p.transDur = 900; p.transEase = easeOutCubic;
-        }
-        p.estado = alvoEstado;
-        precisaTrabalho = true;
-      }
-      p._alvo = alvoEstado;
-      if (t - p.transInicio < p.transDur) precisaTrabalho = true; // transição rolando
+    for (let k = 0; k < ancoras.length && k < CONFIG.fotos.length; k++) {
+      const fi = escolha[k % escolha.length] % CONFIG.fotos.length;
+      const a = ancoras[k];
+      const fig = montaPolaroid(CONFIG.fotos[fi], fi, 'pola--fundo');
+      fig.style.left = a.x + '%';
+      fig.style.top = a.y + '%';
+      fig.style.setProperty('--dur', (15 + k * 1.6) + 's');
+      fig.style.setProperty('--delay', (-k * 2.1) + 's');
+      fundo.appendChild(fig);
     }
-    ultimoSy = sy;
-
-    // nada mudou (parado, sem transição) → não toca no DOM, economiza CPU
-    if (!precisaTrabalho) { requestAnimationFrame(tick); return; }
-
-    // 2) lê os rects dos slots que vão receber foto — tudo junto, sem escrever no meio
-    const slotRects = [];
-    for (let i = 0; i < items.length; i++) {
-      if (items[i]._alvo === 'pousada') {
-        const slot = grid.children[i];
-        slotRects[i] = slot ? slot.getBoundingClientRect() : null;
-      }
-    }
-
-    // ---- ESCRITA (só transforms/classes, sem ler layout) ----
-    for (let i = 0; i < items.length; i++) {
-      const p = items[i];
-      const alvoEstado = p._alvo;
-      const target =
-        alvoEstado === 'escondida' ? alvoEscondida(i) :
-        alvoEstado === 'flutuando' ? alvoFlutuando(i) :
-                                     alvoPousada(i, slotRects[i]);
-
-      const elapsed = t - p.transInicio;
-      if (elapsed < p.transDur) {
-        const u = elapsed / p.transDur;
-        const e = p.transEase(u);
-        p.pos.x = lerp(p.transFrom.x, target.x, e);
-        p.pos.y = lerp(p.transFrom.y, target.y, e);
-        p.pos.rot = lerp(p.transFrom.rot, target.rot, e);
-        p.pos.scale = lerp(p.transFrom.scale, target.scale, e);
-        p.pos.opacity = lerp(p.transFrom.opacity, target.opacity, e);
-      } else {
-        p.pos = target;
-      }
-      aplicar(p);
-
-      if (alvoEstado === 'escondida') {
-        p.el.classList.remove('visivel', 'aterrissada');
-      } else if (alvoEstado === 'flutuando') {
-        p.el.classList.add('visivel');
-        p.el.classList.remove('aterrissada');
-      } else {
-        p.el.classList.add('visivel', 'aterrissada');
-      }
-    }
-
-    requestAnimationFrame(tick);
+    document.body.insertBefore(fundo, document.body.firstChild.nextSibling);
   }
-  requestAnimationFrame(tick);
 })();
 
 function abrirLightbox(src, legenda) {

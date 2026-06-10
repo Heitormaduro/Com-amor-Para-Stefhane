@@ -514,16 +514,80 @@ body.transicao .medalha-brilho::before { animation-play-state: paused; }
 /* o conteúdo do site precisa flutuar ACIMA das fotos do fundo */
 #conteudo { position: relative; z-index: 1; }
 
-/* o mural (climax): slots reservam onde cada polaroid pousa.
-   altura de cada slot é definida via JS (proporção real da foto → masonry). */
+/* MURAL: todas as fotos como polaroids, escalonadas tipo parede de fotos.
+   cada uma revela com um fade-up quando entra na tela (.pola--on). */
 .galeria { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start;
-  gap: 28px 36px; margin-top: 48px; }
-.foto-slot { width: 200px; flex: 0 0 auto; }
-.foto-slot:nth-child(even) { margin-top: 36px; }   /* escalonado = cara de mural */
+  gap: 30px 40px; margin-top: 50px; }
+.pola {
+  width: 200px; flex: 0 0 auto; margin: 0; cursor: pointer;
+  opacity: 0; transform: translateY(30px) rotate(var(--tilt, 0deg)) scale(.95);
+  transition: opacity .6s ease, transform .65s cubic-bezier(.2,.7,.2,1);
+}
+.pola:nth-child(even) { margin-top: 40px; }   /* escalonado = cara de mural */
+.pola--on { opacity: 1; transform: translateY(0) rotate(var(--tilt, 0deg)) scale(1); }
+
+/* o cartão da polaroid (frame creme + fita no topo) */
+.pola__cartao {
+  position: relative;
+  background: linear-gradient(168deg, #fffdfb 0%, #fff2f6 100%);
+  border-radius: 7px; padding: 11px 11px 0;
+  box-shadow:
+    0 16px 34px rgba(0, 0, 0, .55),
+    0 4px 10px rgba(0, 0, 0, .3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  transition: box-shadow .35s, transform .35s;
+}
+.pola__cartao::before {
+  content: ""; position: absolute; top: -8px; left: 50%;
+  transform: translateX(-50%) rotate(-2.5deg);
+  width: 56px; height: 17px;
+  background: rgba(255, 190, 208, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, .16);
+}
+/* janela da foto — aspect-ratio é setado no load = proporção REAL da imagem,
+   então object-fit:cover preenche SEM cortar nada */
+.pola__janela {
+  position: relative; width: 100%; aspect-ratio: 3 / 4;
+  background: linear-gradient(160deg, #3a0d1e, #220810);
+  border-radius: 3px; overflow: hidden;
+}
+.pola__janela img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pola figcaption {
+  font-family: var(--f-script); color: #c0335a; text-align: center;
+  font-size: 1.2rem; line-height: 1.15; padding: 9px 6px 13px;
+}
+.pola:hover { z-index: 5; }
+.pola:hover .pola__cartao {
+  transform: translateY(-6px) scale(1.03);
+  box-shadow:
+    0 30px 64px rgba(255, 77, 109, .5),
+    0 8px 18px rgba(0, 0, 0, .35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* ------ FUNDO: um punhado de fotos flutuando suave nas margens (ambiente).
+   posicionadas via JS (left/top %), animação só em CSS (sem rAF). ------ */
+.fundo-fotos { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.pola--fundo {
+  position: absolute; width: 132px; opacity: .3;
+  transition: none;
+  animation: fotoDrift var(--dur, 18s) ease-in-out var(--delay, 0s) infinite;
+}
+.pola--fundo .pola__cartao { box-shadow: 0 12px 26px rgba(0, 0, 0, .5); }
+.pola--fundo .pola__cartao::before { opacity: .6; }
+.pola--fundo figcaption { display: none; }   /* sem legenda no fundo */
+@keyframes fotoDrift {
+  0%, 100% { transform: translateY(10px) rotate(var(--tilt, 0deg)) scale(.9); }
+  50%      { transform: translateY(-12px) rotate(calc(var(--tilt, 0deg) + 1.4deg)) scale(.92); }
+}
+
 @media (max-width: 520px) {
-  .galeria { gap: 20px 22px; }
-  .foto-slot { width: 150px; }
-  .foto-slot:nth-child(even) { margin-top: 22px; }
+  .galeria { gap: 22px 24px; }
+  .pola { width: 150px; }
+  .pola:nth-child(even) { margin-top: 26px; }
+  .pola figcaption { font-size: 1rem; padding: 7px 4px 11px; }
+  .pola--fundo { width: 92px; opacity: .22; }
 
   /* hero: contém os corações do buquê pra não invadirem o nome/texto */
   .hero__arte { min-height: 250px; margin-bottom: 6px; }
@@ -536,89 +600,8 @@ body.transicao .medalha-brilho::before { animation-play-state: paused; }
   .arte__coracao.c5 { top: 48%; right: 12%; }
 }
 
-/* ------ CAMADA DE FOTOS NO FUNDO (scroll-driven) ----------- */
-.fotos-bg {
-  position: fixed; inset: 0;
-  pointer-events: none; z-index: 0;
-  overflow: hidden;
-}
-/* wrapper externo: o JS posiciona aqui (transform). largura fixa, altura natural
-   (a polaroid define a altura conforme a proporção da foto). */
-.foto-bg {
-  position: absolute; top: 0; left: 0;
-  width: 200px;
-  opacity: 0;
-  will-change: transform, opacity;
-  transform-origin: top left;
-}
-@media (max-width: 520px) {
-  .foto-bg { width: 150px; }
-}
-
-/* ===== POLAROID: frame creme, foto na janela, legenda embaixo ===== */
-.foto-bg__cartao {
-  position: relative;
-  background: linear-gradient(168deg, #fffdfb 0%, #fff2f6 100%);
-  border-radius: 7px;
-  padding: 11px 11px 0;
-  box-shadow:
-    0 16px 34px rgba(0, 0, 0, .55),
-    0 4px 10px rgba(0, 0, 0, .3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.75);
-  transition: box-shadow .35s, transform .35s;
-}
-/* fita adesiva no topo (charme de mural) */
-.foto-bg__cartao::before {
-  content: ""; position: absolute; top: -8px; left: 50%;
-  transform: translateX(-50%) rotate(-2.5deg);
-  width: 56px; height: 17px;
-  background: rgba(255, 190, 208, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, .16);
-}
-/* janela da foto — a proporção (aspect-ratio) é setada no load = proporção real
-   da imagem, então object-fit:cover preenche SEM cortar nada */
-.polaroid__janela {
-  position: relative; width: 100%; aspect-ratio: 3 / 4;
-  background: linear-gradient(160deg, #3a0d1e, #220810);
-  border-radius: 3px; overflow: hidden;
-}
-.polaroid__janela img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.foto-bg__cartao figcaption {
-  font-family: var(--f-script); color: #c0335a; text-align: center;
-  font-size: 1.2rem; line-height: 1.15; padding: 9px 6px 13px;
-}
-@media (max-width: 520px) { .foto-bg__cartao figcaption { font-size: 1rem; padding: 7px 4px 11px; } }
-
-.foto-bg.aterrissada { pointer-events: auto; cursor: pointer; }
-.foto-bg.aterrissada:hover { z-index: 5; }
-.foto-bg.aterrissada:hover .foto-bg__cartao {
-  box-shadow:
-    0 30px 64px rgba(255, 77, 109, .5),
-    0 8px 18px rgba(0, 0, 0, .35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
-}
-
-/* ----- FLUTUAÇÃO: o cartão se mexe sempre que a foto está visível ----- */
-.foto-bg.visivel .foto-bg__cartao {
-  animation-name: flutuaFoto;
-  animation-iteration-count: infinite;
-  animation-timing-function: ease-in-out;
-}
-@keyframes flutuaFoto {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-10px); }
-}
-/* tempos diferentes por foto pra parecer orgânico (cada uma no seu ritmo) */
-.foto-bg:nth-of-type(1) .foto-bg__cartao { animation-duration: 5.0s; animation-delay: 0s; }
-.foto-bg:nth-of-type(2) .foto-bg__cartao { animation-duration: 5.6s; animation-delay: -0.8s; }
-.foto-bg:nth-of-type(3) .foto-bg__cartao { animation-duration: 4.7s; animation-delay: -1.7s; }
-.foto-bg:nth-of-type(4) .foto-bg__cartao { animation-duration: 5.4s; animation-delay: -2.5s; animation-direction: reverse; }
-.foto-bg:nth-of-type(5) .foto-bg__cartao { animation-duration: 5.2s; animation-delay: -3.4s; }
-.foto-bg:nth-of-type(6) .foto-bg__cartao { animation-duration: 4.8s; animation-delay: -4.2s; animation-direction: reverse; }
-
 /* ----- PLACEHOLDER (quando ainda não tem foto) — dentro da janela ----- */
-.polaroid__janela.vazia { display: grid; place-items: center; }
+.pola__janela.vazia { display: grid; place-items: center; }
 .foto__placeholder {
   display: flex; flex-direction: column; align-items: center; gap: 8px;
   padding: 14px; text-align: center;
