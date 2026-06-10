@@ -516,6 +516,16 @@ body.transicao .medalha-brilho::before { animation-play-state: paused; }
 @media (max-width: 520px) {
   .galeria { grid-template-columns: repeat(auto-fit, 170px); }
   .foto-slot { width: 170px; height: 227px; }
+
+  /* hero: contém os corações do buquê pra não invadirem o nome/texto */
+  .hero__arte { min-height: 250px; margin-bottom: 6px; }
+  .arte__buque { font-size: clamp(6rem, 30vw, 8.5rem); }
+  .arte__coracao { font-size: 1.5rem !important; }
+  .arte__coracao.c1 { top: 12%; left: 24%; }
+  .arte__coracao.c2 { top: 20%; right: 22%; }
+  .arte__coracao.c3 { bottom: 22%; left: 20%; }
+  .arte__coracao.c4 { bottom: 18%; right: 26%; }
+  .arte__coracao.c5 { top: 48%; right: 12%; }
 }
 
 /* ------ CAMADA DE FOTOS NO FUNDO (scroll-driven) ----------- */

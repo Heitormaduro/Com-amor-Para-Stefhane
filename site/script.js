@@ -629,7 +629,7 @@ document.addEventListener('DOMContentLoaded', revealsNoScroll);
   items.forEach((p, i) => {
     p.estado = 'escondida';
     p.pos = alvoEscondida(i);
-    p.transFrom = null;
+    p.transFrom = { ...p.pos };
     p.transInicio = 0;
     p.transDur = 1000;
     p.transEase = easeOutCubic;
