@@ -367,6 +367,21 @@ body.transicao .medalha-brilho::before { animation-play-state: paused; }
 .arte__buque { font-size: clamp(8rem, 22vw, 13rem); position: relative; z-index: 2;
   filter: drop-shadow(0 10px 16px rgba(0,0,0,.5)); animation: balança 6s ease-in-out infinite; will-change: transform; }
 @keyframes balança { 0%,100%{transform:translateY(0) rotate(-2deg)} 50%{transform:translateY(-16px) rotate(2deg)} }
+
+/* retrato circular da Stefhane no lugar do buquê (moldura glossy + brilho) */
+.arte__retrato {
+  width: clamp(200px, 46vw, 290px); aspect-ratio: 1; margin: 0; padding: 6px;
+  border-radius: 50%; overflow: hidden;
+  background: linear-gradient(160deg, var(--rosa-claro), var(--rosa) 45%, var(--vermelho));
+  box-shadow:
+    0 22px 60px rgba(255,77,109,.5),
+    0 6px 16px rgba(0,0,0,.45),
+    inset 0 0 0 2px rgba(255,255,255,.35);
+}
+.arte__retrato img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  border-radius: 50%; border: 3px solid rgba(34,8,16,.9);
+}
 .arte__coracao { position: absolute; z-index: 3; font-size: 2.2rem; will-change: transform;
   filter: drop-shadow(0 4px 8px rgba(255,77,109,.45)); }
 .arte__coracao.c1 { top: 8%; left: 16%; animation: bóia 5s ease-in-out infinite; }
@@ -592,6 +607,8 @@ body.transicao .medalha-brilho::before { animation-play-state: paused; }
   transform: translateX(var(--from, -60px)) scale(.9);
   transition: opacity .7s ease, transform .8s cubic-bezier(.2,.7,.2,1);
 }
+/* fotos deitadas (horizontais) no fundo ficam bem maiores — senão somem de tão baixinhas */
+.pola--fundo.pola--horizontal { width: 300px; }
 /* quando entra na tela: desliza pro lugar + aparece */
 .pola--fundo.vista { opacity: .55; transform: translateX(0) scale(1); }
 
@@ -617,6 +634,7 @@ body.transicao .medalha-brilho::before { animation-play-state: paused; }
   .pola figcaption { font-size: 1.5rem; padding: 11px 6px 15px; }
   .pola__cartao::after { font-size: 1.5rem; right: -8px; bottom: 40px; }
   .pola--fundo { width: 118px; }
+  .pola--fundo.pola--horizontal { width: 210px; }
   .pola--fundo.vista { opacity: .4; }
 
   /* hero: contém os corações do buquê pra não invadirem o nome/texto */

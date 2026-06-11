@@ -28,6 +28,7 @@ const CONFIG = {
     { arquivo: 'fotos/foto12.jpg', legenda: 'a gente combina demais, né?' },
     { arquivo: 'fotos/foto13.jpg', legenda: 'guardo cada segundo desse' },
     { arquivo: 'fotos/foto14.jpg', legenda: 'e isso é só o começo, viu 😏' },
+    { arquivo: 'fotos/Nos20.jpeg', legenda: 'a gente, do nosso jeitinho 💕' },
   ],
 
   // ✍️ Frase que "digita sozinha" na seção da história.
@@ -551,6 +552,8 @@ document.addEventListener('DOMContentLoaded', revealsNoScroll);
       if (img.naturalWidth && img.naturalHeight) {
         // proporção real da foto → sem corte, sem borda
         janela.style.aspectRatio = img.naturalWidth + ' / ' + img.naturalHeight;
+        // fotos deitadas (horizontais) ganham um marcador pra ficarem maiores no fundo
+        if (img.naturalWidth > img.naturalHeight * 1.15) fig.classList.add('pola--horizontal');
       }
     };
     img.onerror = () => {
