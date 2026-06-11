@@ -788,6 +788,8 @@ function tentarTocarMusica() {
   if (!botao) return;
   if (!CONFIG.temMusica) { botao.style.display = 'none'; return; }
   botao.addEventListener('click', () => {
+    // sem música escolhida ainda → reabre a vitrine pra ela escolher/trocar
+    if (!audio.src) { if (window.abrirSeletorMusica) window.abrirSeletorMusica(); return; }
     if (audio.paused) { audio.play(); botao.classList.add('tocando'); }
     else { audio.pause(); botao.classList.remove('tocando'); }
   });
