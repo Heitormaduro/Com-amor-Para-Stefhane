@@ -981,20 +981,22 @@ if (elAno) elAno.textContent = new Date().getFullYear();
   }
 
   /* ---- botão que foge (3 fugas → vai pra lixeira) ---- */
+  const MAX_FUGAS = 3;
   let fugas = 0, ultimaFuga = 0, naLixeira = false;
   function fugir(e) {
     if (naLixeira) return;
     if (e && e.cancelable) e.preventDefault();
-    // no celular pointerenter+touchstart disparam juntos — conta 1 fuga só
-    if (Date.now() - ultimaFuga < 220) return;
+    // pointerenter + touchstart podem disparar juntos no mesmo gesto —
+    // janela de 450ms garante que cada "tentativa" conte só 1 vez
+    if (Date.now() - ultimaFuga < 450) return;
     ultimaFuga = Date.now();
     fugas++;
 
-    // posição do dedo/cursor → salta pro ponto MAIS LONGE possível na tela
+    // posição do dedo/cursor → desliza pro ponto MAIS LONGE possível na tela
     const px = (e && e.clientX) || innerWidth / 2;
     const py = (e && e.clientY) || innerHeight / 2;
     const r = btnFoge.getBoundingClientRect();
-    const bw = r.width, bh = r.height, m = 14;
+    const bw = r.width, bh = r.height, m = 16;
     let best = -1, bx = 0, by = 0;
     for (let k = 0; k < 16; k++) {
       const x = m + Math.random() * Math.max(1, innerWidth - bw - m * 2);
@@ -1007,55 +1009,65 @@ if (elAno) elAno.textContent = new Date().getFullYear();
     btnFoge.style.margin = '0';
     btnFoge.style.left = bx + 'px';
     btnFoge.style.top = by + 'px';
-    btnFoge.style.transform = `rotate(${Math.round(Math.random() * 16 - 8)}deg)`;
+    btnFoge.style.transform = `rotate(${Math.round(Math.random() * 10 - 5)}deg)`;
 
     if (fugas === 1) btnFoge.textContent = 'ué… 🙈';
     else if (fugas === 2) btnFoge.textContent = 'para! 😝';
 
-    if (fugas >= 3) irPraLixeira();
+    if (fugas >= MAX_FUGAS) setTimeout(irPraLixeira, 450); // deixa o último deslize terminar
   }
   btnFoge.addEventListener('pointerenter', fugir);
-  btnFoge.addEventListener('pointerdown', fugir);
   btnFoge.addEventListener('touchstart', fugir, { passive: false });
 
   function irPraLixeira() {
+    if (naLixeira) return;
     naLixeira = true;
     btnFoge.style.pointerEvents = 'none';
+
+    // 1) a lixeira surge com um pop suave embaixo
     lixeira.hidden = false;
+    lixeira.animate([
+      { opacity: 0, transform: 'translateX(-50%) translateY(40px) scale(.3)' },
+      { opacity: 1, transform: 'translateX(-50%) translateY(-6px) scale(1.12)', offset: .7 },
+      { opacity: 1, transform: 'translateX(-50%) translateY(0) scale(1)' },
+    ], { duration: 520, easing: 'cubic-bezier(.34,1.56,.64,1)', fill: 'forwards' });
+
     const lr = lixeira.getBoundingClientRect();
     const br = btnFoge.getBoundingClientRect();
     const dx = (lr.left + lr.width / 2) - (br.left + br.width / 2);
-    const dy = (lr.top + lr.height * 0.15) - (br.top + br.height / 2);
+    const dy = (lr.top + lr.height * 0.12) - (br.top + br.height / 2);
 
-    // o botão voa em arco e cai encolhendo dentro da lixeira
-    btnFoge.animate([
-      { transform: 'translate(0,0) rotate(0) scale(1)', opacity: 1 },
-      { transform: `translate(${dx * 0.5}px, ${dy - 130}px) rotate(200deg) scale(.78)`, opacity: 1, offset: 0.55 },
-      { transform: `translate(${dx}px, ${dy}px) rotate(460deg) scale(.12)`, opacity: 0 },
-    ], { duration: 950, easing: 'cubic-bezier(.5,-0.25,.7,1)', fill: 'forwards' }).onfinish = () => {
-      btnFoge.remove();
-      // a lixeira "engole" — balança e solta um puffzinho de corações
-      lixeira.animate([
-        { transform: 'translateX(-50%) rotate(0) scale(1)' },
-        { transform: 'translateX(-50%) rotate(-13deg) scale(1.16)', offset: 0.3 },
-        { transform: 'translateX(-50%) rotate(11deg) scale(1.1)',  offset: 0.62 },
-        { transform: 'translateX(-50%) rotate(0) scale(1)' },
-      ], { duration: 620, easing: 'ease-in-out' });
-      chuvaDeCoracoes(10, lr.left + lr.width / 2, lr.top);
-      // lixeira some e o SIM fica sozinho, grandão, no meio
-      setTimeout(() => {
-        lixeira.animate(
-          [{ opacity: 1, transform: 'translateX(-50%) scale(1)' },
-           { opacity: 0, transform: 'translateX(-50%) scale(.6) translateY(20px)' }],
-          { duration: 520, easing: 'ease-in', fill: 'forwards' }
-        ).onfinish = () => { lixeira.hidden = true; };
-        pergunta.classList.add('pedido__pergunta--soSim');
-        if (soSim) soSim.hidden = false;
-        btnSim.animate(
-          [{ transform: 'scale(1)' }, { transform: 'scale(1.18)' }, { transform: 'scale(1)' }],
-          { duration: 700, easing: 'ease-out' });
-      }, 1000);
-    };
+    // 2) depois da lixeira aparecer, o botão é "jogado fora": arco suave caindo dentro
+    setTimeout(() => {
+      btnFoge.animate([
+        { transform: 'translate(0,0) rotate(0) scale(1)', opacity: 1 },
+        { transform: `translate(${dx * 0.5}px, ${dy - 150}px) rotate(160deg) scale(.82)`, opacity: 1, offset: 0.5 },
+        { transform: `translate(${dx}px, ${dy}px) rotate(380deg) scale(.1)`, opacity: 0 },
+      ], { duration: 1050, easing: 'cubic-bezier(.45,.05,.55,.95)', fill: 'forwards' }).onfinish = () => {
+        btnFoge.remove();
+        // 3) a lixeira "engole" — balança e solta um puffzinho de corações
+        lixeira.animate([
+          { transform: 'translateX(-50%) rotate(0) scale(1)' },
+          { transform: 'translateX(-50%) rotate(-12deg) scale(1.18)', offset: 0.3 },
+          { transform: 'translateX(-50%) rotate(9deg) scale(1.08)',   offset: 0.62 },
+          { transform: 'translateX(-50%) rotate(0) scale(1)' },
+        ], { duration: 660, easing: 'ease-in-out' });
+        chuvaDeCoracoes(10, lr.left + lr.width / 2, lr.top);
+        // 4) lixeira some e o SIM fica sozinho, grandão, no meio
+        setTimeout(() => {
+          lixeira.animate(
+            [{ opacity: 1, transform: 'translateX(-50%) scale(1)' },
+             { opacity: 0, transform: 'translateX(-50%) scale(.55) translateY(24px)' }],
+            { duration: 560, easing: 'ease-in', fill: 'forwards' }
+          ).onfinish = () => { lixeira.hidden = true; };
+          pergunta.classList.add('pedido__pergunta--soSim');
+          if (soSim) soSim.hidden = false;
+          btnSim.animate(
+            [{ transform: 'scale(1)' }, { transform: 'scale(1.18)' }, { transform: 'scale(1)' }],
+            { duration: 700, easing: 'ease-out' });
+        }, 1050);
+      };
+    }, 360);
   }
 
   /* ---- ELA DISSE SIM ---- */
