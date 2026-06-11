@@ -378,11 +378,13 @@ if (!temGsap) document.documentElement.classList.remove('anim');
 
   if (pular) pular.addEventListener('click', () => escolher(null, null));
 
-  // no desktop, a rodinha do mouse desliza a prateleira pro lado
+  // no desktop, a rodinha do mouse passa as músicas (um disco por "notch")
   cont.addEventListener('wheel', (e) => {
     if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
       e.preventDefault();
-      cont.scrollLeft += e.deltaY;
+      const d = cont.querySelector('.disco');
+      const passo = d ? d.offsetWidth + 24 : 240;
+      cont.scrollBy({ left: (e.deltaY > 0 ? 1 : -1) * passo, behavior: 'smooth' });
     }
   }, { passive: false });
 

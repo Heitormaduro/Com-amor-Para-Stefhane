@@ -303,7 +303,8 @@ body.transicao .medalha-brilho::before { animation-play-state: paused; }
   display: flex; flex-wrap: nowrap; align-items: flex-start;
   gap: clamp(18px, 4vw, 36px); margin-bottom: 10px;
   overflow-x: auto; overscroll-behavior-x: contain;
-  scroll-snap-type: x mandatory;
+  /* snap suave no desktop (não trava a rodinha); forte só no toque */
+  scroll-snap-type: x proximity;
   padding: 8px 4px 18px;
   scrollbar-width: thin; scrollbar-color: rgba(255,77,109,.55) rgba(255,255,255,.06);
 }
@@ -396,6 +397,9 @@ body.transicao .medalha-brilho::before { animation-play-state: paused; }
 .seletor.aberto .seletor__pular { opacity: 1; transform: translateY(0); }
 .seletor__pular:hover, .seletor__pular:focus-visible { color: var(--rosa-claro); outline: none; }
 
+@media (pointer: coarse) {
+  .seletor__discos { scroll-snap-type: x mandatory; }
+}
 @media (max-width: 480px) {
   .seletor__discos { gap: 14px; }
   .disco { width: clamp(150px, 44vw, 180px); }
