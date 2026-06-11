@@ -94,6 +94,16 @@
     </div>
   </div>
 
+  <!-- ============ SELETOR DE MÚSICA (aparece depois da explosão) ============ -->
+  <div class="seletor" id="seletor" aria-hidden="true">
+    <div class="seletor__inner">
+      <p class="seletor__pre">pra tocar enquanto você navega…</p>
+      <h2 class="seletor__titulo">escolha a <em>nossa</em> trilha</h2>
+      <div class="seletor__discos" id="seletorDiscos"></div>
+      <button class="seletor__pular" id="seletorPular" type="button">prefiro começar sem música</button>
+    </div>
+  </div>
+
   <!-- cursor com brilho (desktop) -->
   <div class="cursor" id="cursor" aria-hidden="true"></div>
   <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
@@ -115,10 +125,7 @@
     <button class="header__burger" id="burger" aria-label="Menu">☰</button>
   </header>
 
-  <audio id="audioFundo" loop preload="none">
-    <!-- Coloque o arquivo da música de vocês em site/musica.mp3 -->
-    <source src="musica.mp3" type="audio/mpeg" />
-  </audio>
+  <audio id="audioFundo" loop preload="none"></audio>
 
   <main id="conteudo">
 

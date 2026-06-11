@@ -266,6 +266,123 @@ body.transicao .halo-aurora,
 body.transicao .halo-ring,
 body.transicao .medalha-brilho::before { animation-play-state: paused; }
 
+/* ============== SELETOR DE MÚSICA (vitrine de vinis) ============== */
+.seletor {
+  position: fixed; inset: 0; z-index: 9990;
+  display: none; align-items: center; justify-content: center;
+  padding: clamp(16px, 4vw, 48px);
+  background:
+    radial-gradient(900px 700px at 50% 38%, rgba(102, 16, 42, 0.72), transparent 75%),
+    linear-gradient(165deg, #2a0810 0%, #1a050b 55%, #0d0306 100%);
+  opacity: 0; transition: opacity .6s ease;
+  overflow-y: auto;
+}
+.seletor.aberto { opacity: 1; }
+
+.seletor__inner { text-align: center; max-width: 880px; width: 100%; margin: auto; }
+.seletor__pre {
+  font-family: var(--f-script); color: var(--rosa-claro);
+  font-size: clamp(1.2rem, 3.5vw, 1.6rem); margin-bottom: 6px;
+  opacity: 0; transform: translateY(14px); transition: opacity .7s ease .1s, transform .7s ease .1s;
+}
+.seletor__titulo {
+  font-family: var(--f-titulo); font-weight: 800; color: var(--texto);
+  font-size: clamp(1.7rem, 5.5vw, 2.6rem); line-height: 1.15; margin-bottom: clamp(22px, 4vh, 40px);
+  opacity: 0; transform: translateY(14px); transition: opacity .7s ease .2s, transform .7s ease .2s;
+}
+.seletor__titulo em {
+  font-style: normal; font-family: var(--f-script); font-weight: 700;
+  background: linear-gradient(90deg, var(--rosa-claro), var(--rosa), var(--rosa-claro));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.seletor.aberto .seletor__pre,
+.seletor.aberto .seletor__titulo { opacity: 1; transform: translateY(0); }
+
+.seletor__discos {
+  display: flex; flex-wrap: wrap; justify-content: center;
+  gap: clamp(18px, 4vw, 36px); margin-bottom: clamp(20px, 4vh, 36px);
+}
+
+/* ----- cada música = um card com vinil + capa ----- */
+.disco {
+  background: none; border: none; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  font-family: var(--f-corpo); color: var(--texto);
+  width: clamp(170px, 42vw, 220px); padding: 8px 6px 12px; border-radius: var(--raio);
+  opacity: 0; transform: translateY(26px) scale(.96);
+  transition: opacity .6s ease, transform .6s cubic-bezier(.22, 1, .36, 1);
+}
+.disco--on { opacity: 1; transform: translateY(0) scale(1); }
+.disco--off { opacity: 0 !important; transform: translateY(14px) scale(.92) !important; pointer-events: none; }
+.disco.sel { transform: scale(1.07) !important; transition-delay: 0s !important; }
+
+.disco__palco { position: relative; display: block; width: clamp(120px, 30vw, 150px); margin: 0 auto 16px; }
+.disco__palco::after { content: ''; display: block; padding-top: 100%; }
+
+/* o vinil espia por trás da capa e gira */
+.disco__vinil {
+  position: absolute; top: 4%; left: 22%; width: 92%; height: 92%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, #1a0b10 0%, #1a0b10 17%, transparent 17.5%),
+    radial-gradient(circle at 50% 50%, var(--rosa) 0%, #c9184a 16%, transparent 16.5%),
+    repeating-radial-gradient(circle at 50% 50%, #19090e 0px, #19090e 2px, #2b1018 3px, #19090e 4px);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, .55), 0 0 24px rgba(255, 77, 109, .18);
+  transition: transform .55s cubic-bezier(.22, 1, .36, 1);
+}
+.disco:hover .disco__vinil, .disco:focus-visible .disco__vinil { transform: translateX(14%); }
+.disco.sel .disco__vinil { transform: translateX(20%); animation: vinilGira 2.2s linear infinite; }
+@keyframes vinilGira { to { transform: translateX(20%) rotate(360deg); } }
+
+/* capa do álbum (ou vinil "vazio" com ♫) */
+.disco__capa {
+  position: absolute; inset: 0 auto 0 0; width: 100%; height: 100%;
+  display: grid; place-items: center;
+  border-radius: 12px; overflow: hidden;
+  background-color: #2b0c18; background-size: cover; background-position: center;
+  border: 1px solid var(--vidro-bd);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .1);
+  transition: transform .55s cubic-bezier(.22, 1, .36, 1);
+}
+.disco:hover .disco__capa, .disco:focus-visible .disco__capa { transform: translateX(-7%) rotate(-2deg); }
+.disco__capa.vazia {
+  font-size: 2.6rem; color: var(--rosa-claro);
+  text-shadow: 0 0 18px rgba(255, 77, 109, .8);
+  background:
+    radial-gradient(circle at 32% 26%, rgba(255, 143, 163, .35), transparent 55%),
+    linear-gradient(150deg, #55102b 0%, #3a0a1c 55%, #21060f 100%);
+}
+
+.disco__nome { font-family: var(--f-titulo); font-weight: 700; font-size: 1.02rem; line-height: 1.3; }
+.disco__artista { color: var(--texto-suave); font-size: .82rem; margin-top: 2px; }
+.disco__letra {
+  font-family: var(--f-script); color: var(--rosa-claro);
+  font-size: 1.02rem; line-height: 1.35; margin-top: 8px; opacity: .9;
+}
+.disco__letra::before { content: '“'; }
+.disco__letra::after { content: '”'; }
+
+.disco:hover, .disco:focus-visible {
+  background: linear-gradient(160deg, rgba(255, 255, 255, .07), rgba(255, 255, 255, .02));
+  outline: none;
+}
+.disco.sel { background: linear-gradient(160deg, rgba(255, 77, 109, .16), rgba(255, 77, 109, .04)); box-shadow: var(--glow); }
+
+.seletor__pular {
+  background: none; border: none; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  font-family: var(--f-corpo); color: var(--texto-suave); font-size: .88rem;
+  padding: 10px 16px; border-radius: 999px;
+  text-decoration: underline; text-underline-offset: 4px; text-decoration-color: rgba(255, 143, 163, .4);
+  transition: color .3s ease;
+  opacity: 0; transform: translateY(10px); transition: opacity .7s ease .45s, transform .7s ease .45s, color .3s ease;
+}
+.seletor.aberto .seletor__pular { opacity: 1; transform: translateY(0); }
+.seletor__pular:hover, .seletor__pular:focus-visible { color: var(--rosa-claro); outline: none; }
+
+@media (max-width: 480px) {
+  .seletor__discos { gap: 14px; }
+  .disco { width: clamp(150px, 44vw, 180px); }
+}
+
 /* ======================== CURSOR ============================ */
 .cursor { position: fixed; top:0; left:0; width: 10px; height: 10px; border-radius: 50%;
   background: var(--rosa); pointer-events: none; z-index: 10000;

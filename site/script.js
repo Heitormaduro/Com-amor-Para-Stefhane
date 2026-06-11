@@ -31,6 +31,20 @@ const CONFIG = {
     { arquivo: 'fotos/Nos20.jpeg', legenda: 'a gente, do nosso jeitinho 💕' },
   ],
 
+  // 🎶 Músicas: jogue os arquivos .mp3 em site/ (ou em site/musicas/) e liste aqui.
+  //    Ela escolhe qual tocar logo no começo. Campos extras são OPCIONAIS:
+  //      capa    = imagem da capa do álbum (ex: 'capas/blue.jpg'). Sem capa, vira um vinil estiloso.
+  //      artista = nome de quem canta.
+  //      letra   = um trechinho da letra (aparece embaixo do disco).
+  musicas: [
+    { arquivo: 'musica.mp3', titulo: 'A nossa música', artista: '', capa: '', letra: '' },
+    // exemplos pra você copiar quando adicionar mais:
+    // { arquivo: 'musicas/blue.mp3', titulo: 'Blue', artista: 'yung kai',
+    //   capa: 'capas/blue.jpg', letra: 'you remind me of the color blue' },
+    // { arquivo: 'musicas/outra.mp3', titulo: 'Outra música', artista: '',
+    //   capa: '', letra: '' },
+  ],
+
   // ✍️ Frase que "digita sozinha" na seção da história.
   fraseTypewriter: 'pode contar sempre comigo, eu vou estar com você!!!',
 
@@ -118,9 +132,8 @@ if (!temGsap) document.documentElement.classList.remove('anim');
   }
 
   function finalizar() {
-    document.body.style.overflow = '';
-    introHero();
-    if (CONFIG.temMusica) tentarTocarMusica();
+    // depois da explosão, abre a vitrine pra ela escolher a trilha
+    abrirSeletorMusica();
   }
 
   // === Canvas + sprite cache (super leve mesmo com 100+ corações) ===
@@ -274,6 +287,106 @@ if (!temGsap) document.documentElement.classList.remove('anim');
   botao.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); abrir(); }
   });
+})();
+
+/* ---------- 1.5 Seletor de música (vitrine de vinis) ----------
+   Logo depois da explosão, a Stefhane escolhe a trilha que vai tocar
+   enquanto navega. Os discos vêm da lista CONFIG.musicas.
+   ----------------------------------------------------------- */
+(function seletorMusica() {
+  const seletor = document.getElementById('seletor');
+  const cont = document.getElementById('seletorDiscos');
+  const pular = document.getElementById('seletorPular');
+  if (!seletor || !cont) { window.abrirSeletorMusica = () => { document.body.style.overflow = ''; introHero(); }; return; }
+
+  const audio = document.getElementById('audioFundo');
+  const botaoMus = document.getElementById('botaoMusica');
+  let construido = false, escolhido = false, revelado = false;
+
+  function tocar(m) {
+    if (!audio || !m || !m.arquivo) return;
+    audio.src = m.arquivo;
+    audio.volume = 0.45;
+    audio.play().then(() => botaoMus && botaoMus.classList.add('tocando')).catch(() => {});
+  }
+
+  function construir() {
+    CONFIG.musicas.forEach((m, i) => {
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'disco';
+      card.style.transitionDelay = (0.08 * i) + 's';
+
+      const palco = document.createElement('span');
+      palco.className = 'disco__palco';
+      const vinil = document.createElement('span');
+      vinil.className = 'disco__vinil';
+      const capa = document.createElement('span');
+      capa.className = 'disco__capa';
+      if (m.capa) {
+        capa.style.backgroundImage = 'url("' + m.capa + '")';
+        const im = new Image(); im.src = m.capa;
+        im.onerror = () => { capa.style.backgroundImage = ''; capa.classList.add('vazia'); capa.textContent = '♫'; };
+      } else { capa.classList.add('vazia'); capa.textContent = '♫'; }
+      palco.appendChild(vinil);
+      palco.appendChild(capa);
+      card.appendChild(palco);
+
+      const nome = document.createElement('p');
+      nome.className = 'disco__nome';
+      nome.textContent = m.titulo || m.arquivo;
+      card.appendChild(nome);
+
+      if (m.artista) {
+        const art = document.createElement('p');
+        art.className = 'disco__artista';
+        art.textContent = m.artista;
+        card.appendChild(art);
+      }
+      if (m.letra) {
+        const ltr = document.createElement('p');
+        ltr.className = 'disco__letra';
+        ltr.textContent = m.letra;
+        card.appendChild(ltr);
+      }
+
+      card.addEventListener('click', () => escolher(m, card));
+      cont.appendChild(card);
+    });
+    requestAnimationFrame(() => cont.querySelectorAll('.disco').forEach((d) => d.classList.add('disco--on')));
+  }
+
+  function fechar() {
+    seletor.classList.remove('aberto');
+    document.body.style.overflow = '';
+    setTimeout(() => { seletor.style.display = 'none'; }, 650);
+  }
+
+  function escolher(m, el) {
+    if (escolhido) return; escolhido = true;
+    if (el) {
+      el.classList.add('sel');
+      cont.querySelectorAll('.disco').forEach((d) => { if (d !== el) d.classList.add('disco--off'); });
+    }
+    tocar(m);
+    setTimeout(() => { fechar(); if (!revelado) { revelado = true; introHero(); } }, m ? 720 : 120);
+  }
+
+  if (pular) pular.addEventListener('click', () => escolher(null, null));
+
+  window.abrirSeletorMusica = function () {
+    if (!CONFIG.temMusica || !CONFIG.musicas || !CONFIG.musicas.length) {
+      document.body.style.overflow = '';
+      if (!revelado) { revelado = true; introHero(); }
+      return;
+    }
+    if (!construido) { construir(); construido = true; }
+    escolhido = false;
+    cont.querySelectorAll('.disco').forEach((d) => d.classList.remove('sel', 'disco--off'));
+    seletor.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    requestAnimationFrame(() => seletor.classList.add('aberto'));
+  };
 })();
 
 /* ---------- 2. Animações de entrada (GSAP) ----------------- */
