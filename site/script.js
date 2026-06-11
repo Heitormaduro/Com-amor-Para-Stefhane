@@ -378,6 +378,14 @@ if (!temGsap) document.documentElement.classList.remove('anim');
 
   if (pular) pular.addEventListener('click', () => escolher(null, null));
 
+  // no desktop, a rodinha do mouse desliza a prateleira pro lado
+  cont.addEventListener('wheel', (e) => {
+    if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+      e.preventDefault();
+      cont.scrollLeft += e.deltaY;
+    }
+  }, { passive: false });
+
   window.abrirSeletorMusica = function () {
     if (!CONFIG.temMusica || !CONFIG.musicas || !CONFIG.musicas.length) {
       document.body.style.overflow = '';
