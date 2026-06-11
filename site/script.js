@@ -893,6 +893,8 @@ if (elAno) elAno.textContent = new Date().getFullYear();
   const tituloPer = document.getElementById('pedidoPerguntaTitulo');
   const btnSim    = document.getElementById('pedidoSim');
   const btnFoge   = document.getElementById('pedidoFoge');
+  const soSim     = document.getElementById('pedidoSoSim');
+  const lixeira   = document.getElementById('pedidoLixeira');
   const replay    = document.getElementById('pedidoReplay');
   const playback  = document.getElementById('pedidoPlayback');
   const btnEnviar = document.getElementById('pedidoEnviar');
@@ -978,26 +980,83 @@ if (elAno) elAno.textContent = new Date().getFullYear();
     chuvaDeCoracoes(16);
   }
 
-  /* ---- botão que foge (3 tentativas e ele se entrega) ---- */
-  let fugas = 0, ultimaFuga = 0;
+  /* ---- botão que foge (3 fugas → vai pra lixeira) ---- */
+  let fugas = 0, ultimaFuga = 0, naLixeira = false;
   function fugir(e) {
-    if (fugas >= 3) return;
+    if (naLixeira) return;
     if (e && e.cancelable) e.preventDefault();
     // no celular pointerenter+touchstart disparam juntos — conta 1 fuga só
-    if (Date.now() - ultimaFuga < 250) return;
+    if (Date.now() - ultimaFuga < 220) return;
     ultimaFuga = Date.now();
     fugas++;
-    const dx = Math.round(Math.random() * 170 - 85);
-    const dy = Math.round(Math.random() * 90 - 45);
-    btnFoge.style.transform = `translate(${dx}px, ${dy}px) rotate(${Math.round(Math.random() * 12 - 6)}deg)`;
-    if (fugas === 3) setTimeout(() => {
-      btnFoge.textContent = 'tá bom, você venceu: SIM!!! 😂';
-      btnFoge.style.transform = '';
-    }, 380);
+
+    // posição do dedo/cursor → salta pro ponto MAIS LONGE possível na tela
+    const px = (e && e.clientX) || innerWidth / 2;
+    const py = (e && e.clientY) || innerHeight / 2;
+    const r = btnFoge.getBoundingClientRect();
+    const bw = r.width, bh = r.height, m = 14;
+    let best = -1, bx = 0, by = 0;
+    for (let k = 0; k < 16; k++) {
+      const x = m + Math.random() * Math.max(1, innerWidth - bw - m * 2);
+      const y = m + Math.random() * Math.max(1, innerHeight - bh - m * 2);
+      const d = Math.hypot(x + bw / 2 - px, y + bh / 2 - py);
+      if (d > best) { best = d; bx = x; by = y; }
+    }
+    btnFoge.style.position = 'fixed';
+    btnFoge.style.zIndex = '9600';
+    btnFoge.style.margin = '0';
+    btnFoge.style.left = bx + 'px';
+    btnFoge.style.top = by + 'px';
+    btnFoge.style.transform = `rotate(${Math.round(Math.random() * 16 - 8)}deg)`;
+
+    if (fugas === 1) btnFoge.textContent = 'ué… 🙈';
+    else if (fugas === 2) btnFoge.textContent = 'para! 😝';
+
+    if (fugas >= 3) irPraLixeira();
   }
   btnFoge.addEventListener('pointerenter', fugir);
+  btnFoge.addEventListener('pointerdown', fugir);
   btnFoge.addEventListener('touchstart', fugir, { passive: false });
-  btnFoge.addEventListener('click', (e) => { if (fugas >= 3) disseSim(); else fugir(e); });
+
+  function irPraLixeira() {
+    naLixeira = true;
+    btnFoge.style.pointerEvents = 'none';
+    lixeira.hidden = false;
+    const lr = lixeira.getBoundingClientRect();
+    const br = btnFoge.getBoundingClientRect();
+    const dx = (lr.left + lr.width / 2) - (br.left + br.width / 2);
+    const dy = (lr.top + lr.height * 0.15) - (br.top + br.height / 2);
+
+    // o botão voa em arco e cai encolhendo dentro da lixeira
+    btnFoge.animate([
+      { transform: 'translate(0,0) rotate(0) scale(1)', opacity: 1 },
+      { transform: `translate(${dx * 0.5}px, ${dy - 130}px) rotate(200deg) scale(.78)`, opacity: 1, offset: 0.55 },
+      { transform: `translate(${dx}px, ${dy}px) rotate(460deg) scale(.12)`, opacity: 0 },
+    ], { duration: 950, easing: 'cubic-bezier(.5,-0.25,.7,1)', fill: 'forwards' }).onfinish = () => {
+      btnFoge.remove();
+      // a lixeira "engole" — balança e solta um puffzinho de corações
+      lixeira.animate([
+        { transform: 'translateX(-50%) rotate(0) scale(1)' },
+        { transform: 'translateX(-50%) rotate(-13deg) scale(1.16)', offset: 0.3 },
+        { transform: 'translateX(-50%) rotate(11deg) scale(1.1)',  offset: 0.62 },
+        { transform: 'translateX(-50%) rotate(0) scale(1)' },
+      ], { duration: 620, easing: 'ease-in-out' });
+      chuvaDeCoracoes(10, lr.left + lr.width / 2, lr.top);
+      // lixeira some e o SIM fica sozinho, grandão, no meio
+      setTimeout(() => {
+        lixeira.animate(
+          [{ opacity: 1, transform: 'translateX(-50%) scale(1)' },
+           { opacity: 0, transform: 'translateX(-50%) scale(.6) translateY(20px)' }],
+          { duration: 520, easing: 'ease-in', fill: 'forwards' }
+        ).onfinish = () => { lixeira.hidden = true; };
+        pergunta.classList.add('pedido__pergunta--soSim');
+        if (soSim) soSim.hidden = false;
+        btnSim.animate(
+          [{ transform: 'scale(1)' }, { transform: 'scale(1.18)' }, { transform: 'scale(1)' }],
+          { duration: 700, easing: 'ease-out' });
+      }, 1000);
+    };
+  }
 
   /* ---- ELA DISSE SIM ---- */
   let respondeu = false;

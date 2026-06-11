@@ -901,7 +901,18 @@ body.transicao .medalha-brilho::before { animation-play-state: paused; }
   -webkit-background-clip: text; background-clip: text; color: transparent; }
 .btn--sim { font-size: 1.15rem; padding: 17px 42px; animation: simPulsa 1.4s ease-in-out infinite; }
 @keyframes simPulsa { 50% { transform: scale(1.07); box-shadow: 0 14px 50px rgba(255, 77, 109, .65); } }
-#pedidoFoge { transition: transform .32s cubic-bezier(.34, 1.56, .64, 1); }
+#pedidoFoge { transition: left .28s cubic-bezier(.34, 1.56, .64, 1), top .28s cubic-bezier(.34, 1.56, .64, 1); }
+
+/* lixeira pra onde o "deixa eu pensar" voa */
+.pedido__lixeira { position: fixed; left: 50%; bottom: 11vh; transform: translateX(-50%);
+  font-size: clamp(3rem, 12vw, 4.6rem); line-height: 1; z-index: 9590; pointer-events: none;
+  filter: drop-shadow(0 12px 22px rgba(0, 0, 0, .55)); }
+
+/* depois da lixeira: só o SIM, centralizado e maior */
+.pedido__pergunta--soSim .pedido__botoes { justify-content: center; }
+.pedido__pergunta--soSim .btn--sim { font-size: 1.32rem; padding: 19px 56px; }
+.pedido__soSim { margin-top: 18px; font-family: var(--f-script); color: var(--rosa-claro);
+  font-size: clamp(1.4rem, 4.8vw, 2.1rem); animation: surgir .6s ease both; }
 
 /* replay da reação */
 .pedido__replay { max-width: 460px; margin: 28px auto 0; padding: clamp(18px, 4vw, 28px);
