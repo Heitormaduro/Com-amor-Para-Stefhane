@@ -420,8 +420,8 @@ body.transicao .medalha-brilho::before { animation-play-state: paused; }
 /* ========================= SEÇÕES =========================== */
 .secao { padding: clamp(70px, 11vh, 130px) clamp(20px, 5vw, 40px); max-width: 1100px; margin: 0 auto;
   text-align: center; scroll-margin-top: 80px; }
-.titulo { font-family: var(--f-script); font-size: clamp(2.6rem, 7vw, 4.4rem); line-height: 1.05;
-  margin-bottom: 22px;
+.titulo { font-family: var(--f-script); font-size: clamp(2.6rem, 7vw, 4.4rem); line-height: 1.18;
+  margin-bottom: 22px; padding-bottom: 0.16em; overflow: visible;
   background: linear-gradient(120deg, var(--rosa-claro), var(--rosa)); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .legenda { color: var(--texto-suave); font-style: italic; margin-bottom: 8px; }
 .texto { font-size: clamp(1rem, 2.2vw, 1.15rem); color: var(--texto); max-width: 620px; margin: 0 auto 16px; }
