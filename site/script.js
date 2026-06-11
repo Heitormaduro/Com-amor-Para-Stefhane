@@ -378,13 +378,25 @@ if (!temGsap) document.documentElement.classList.remove('anim');
 
   if (pular) pular.addEventListener('click', () => escolher(null, null));
 
-  // no desktop, a rodinha do mouse passa as músicas (um disco por "notch")
+  // no desktop, a rodinha passa as músicas com rolagem suave (animada na mão,
+  // porque o smooth nativo brigava com o snap e "teleportava")
+  let alvoX = null, animando = false;
+  function animaScroll() {
+    if (alvoX == null) { animando = false; return; }
+    const dx = alvoX - cont.scrollLeft;
+    if (Math.abs(dx) < 0.6) { cont.scrollLeft = alvoX; alvoX = null; animando = false; return; }
+    cont.scrollLeft += dx * 0.11;   // easing exponencial = deslize macio
+    requestAnimationFrame(animaScroll);
+  }
   cont.addEventListener('wheel', (e) => {
     if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
       e.preventDefault();
       const d = cont.querySelector('.disco');
       const passo = d ? d.offsetWidth + 24 : 240;
-      cont.scrollBy({ left: (e.deltaY > 0 ? 1 : -1) * passo, behavior: 'smooth' });
+      const max = cont.scrollWidth - cont.clientWidth;
+      if (alvoX == null) alvoX = cont.scrollLeft;
+      alvoX = Math.max(0, Math.min(max, alvoX + (e.deltaY > 0 ? 1 : -1) * passo));
+      if (!animando) { animando = true; requestAnimationFrame(animaScroll); }
     }
   }, { passive: false });
 

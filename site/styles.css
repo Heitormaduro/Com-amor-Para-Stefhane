@@ -303,8 +303,8 @@ body.transicao .medalha-brilho::before { animation-play-state: paused; }
   display: flex; flex-wrap: nowrap; align-items: flex-start;
   gap: clamp(18px, 4vw, 36px); margin-bottom: 10px;
   overflow-x: auto; overscroll-behavior-x: contain;
-  /* snap suave no desktop (não trava a rodinha); forte só no toque */
-  scroll-snap-type: x proximity;
+  /* sem snap no desktop (a rodinha anima na mão); snap forte só no toque */
+  scroll-snap-type: none;
   padding: 8px 4px 18px;
   scrollbar-width: thin; scrollbar-color: rgba(255,77,109,.55) rgba(255,255,255,.06);
 }
