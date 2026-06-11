@@ -985,10 +985,12 @@ if (elAno) elAno.textContent = new Date().getFullYear();
      toque nele = 1 fuga, exatamente 3, igual em qualquer aparelho. */
   const MAX_FUGAS = 3;
   let fugas = 0, ultimaFuga = 0, naLixeira = false, fixado = false;
+  let origemX = 0, origemY = 0;   // âncora: a esquiva orbita esse ponto, sem driftar
 
   function fixarBotao() {
     // troca pra posição fixa preservando o lugar atual (pro 1º deslize ser suave)
     const r0 = btnFoge.getBoundingClientRect();
+    origemX = r0.left; origemY = r0.top;
     btnFoge.style.width = r0.width + 'px';
     btnFoge.style.position = 'fixed';
     btnFoge.style.margin = '0';
@@ -1009,21 +1011,20 @@ if (elAno) elAno.textContent = new Date().getFullYear();
     if (fugas >= MAX_FUGAS) { irPraLixeira(); return; }
     if (!fixado) fixarBotao();
 
-    // esquiva CURTA: desliza um tiquinho pro lado oposto do dedo, ali pertinho
-    const px = (e && e.clientX) || innerWidth / 2;
-    const py = (e && e.clientY) || innerHeight / 2;
+    // esquiva CURTA orbitando a posição ORIGINAL (não acumula → nunca foge pro canto)
     const r = btnFoge.getBoundingClientRect();
     const bw = r.width, bh = r.height;
-    const cx = r.left + bw / 2, cy = r.top + bh / 2;
-    // direção: do dedo pro botão (foge na direção contrária ao toque)
-    let vx = cx - px, vy = cy - py;
+    const px = (e && e.clientX) || (origemX + bw / 2);
+    const py = (e && e.clientY) || (origemY + bh / 2);
+    // direção: do dedo pra origem (pulo na direção contrária ao toque)
+    let vx = (origemX + bw / 2) - px, vy = (origemY + bh / 2) - py;
     let len = Math.hypot(vx, vy);
     if (len < 1) { const a = Math.random() * Math.PI * 2; vx = Math.cos(a); vy = Math.sin(a); len = 1; }
     vx /= len; vy /= len;
-    const passo = 110 + Math.random() * 50;          // só uns 110–160px, de leve
+    const passo = 90 + Math.random() * 40;            // pulinho de 90–130px só
     const m = 14;
-    let bx = r.left + vx * passo;
-    let by = r.top + vy * passo;
+    let bx = origemX + vx * passo;
+    let by = origemY + vy * passo;
     // mantém na tela (com folga do header em cima)
     bx = Math.max(m, Math.min(innerWidth - bw - m, bx));
     by = Math.max(86, Math.min(innerHeight - bh - m, by));
