@@ -431,6 +431,7 @@ if (!temGsap) document.documentElement.classList.remove('anim');
 
 /* ---------- 2. Animações de entrada (GSAP) ----------------- */
 function introHero() {
+  scrollTo(0, 0); // o hero sempre aparece do topo
   if (!temGsap || semMov) return;
   const heroAnims = gsap.utils.toArray('#hero [data-anim]');
   gsap.set(heroAnims, { y: 40 });

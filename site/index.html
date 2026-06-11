@@ -8,7 +8,12 @@
   <meta name="theme-color" content="#1a0509" />
 
   <!-- esconde os elementos animados cedo (o JS revela depois com animação) -->
-  <script>document.documentElement.classList.add('anim');</script>
+  <script>
+    document.documentElement.classList.add('anim');
+    // ao recarregar, sempre voltar pro topo (hero) — não restaurar a rolagem antiga
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    addEventListener('load', function () { scrollTo(0, 0); });
+  </script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -142,10 +147,6 @@
           Eu não sou bom com surpresas grandes — então fiz uma do meu jeito.
           Uma página só sua, feita com tempo e com amor.
         </p>
-        <div class="hero__botoes" data-anim>
-          <a href="#historia" class="btn btn--primario magnetic">Começar 💕</a>
-          <a href="#galeria" class="btn btn--vidro magnetic">Ver as fotos</a>
-        </div>
       </div>
 
       <!-- centerpiece: retrato glowing da Stefhane + corações flutuando -->
