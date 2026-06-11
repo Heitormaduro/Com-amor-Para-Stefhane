@@ -1009,15 +1009,20 @@ if (elAno) elAno.textContent = new Date().getFullYear();
     if (fugas >= MAX_FUGAS) { irPraLixeira(); return; }
     if (!fixado) fixarBotao();
 
-    // desliza pro ponto MAIS LONGE possível do dedo/cursor
+    // foge do dedo/cursor, mas dentro de uma ZONA CONFORTÁVEL e sempre visível
+    // (margens generosas pra nunca colar na borda nem sumir atrás do header)
     const px = (e && e.clientX) || innerWidth / 2;
     const py = (e && e.clientY) || innerHeight / 2;
     const r = btnFoge.getBoundingClientRect();
-    const bw = r.width, bh = r.height, m = 16;
-    let best = -1, bx = 0, by = 0;
+    const bw = r.width, bh = r.height;
+    const insetX = Math.max(20, innerWidth * 0.10);
+    const topMin = 90, botMargin = Math.max(24, innerHeight * 0.10);
+    const xMin = insetX, xMax = Math.max(xMin, innerWidth - bw - insetX);
+    const yMin = topMin, yMax = Math.max(yMin, innerHeight - bh - botMargin);
+    let best = -1, bx = (xMin + xMax) / 2, by = (yMin + yMax) / 2;
     for (let k = 0; k < 16; k++) {
-      const x = m + Math.random() * Math.max(1, innerWidth - bw - m * 2);
-      const y = m + Math.random() * Math.max(1, innerHeight - bh - m * 2);
+      const x = xMin + Math.random() * (xMax - xMin);
+      const y = yMin + Math.random() * (yMax - yMin);
       const d = Math.hypot(x + bw / 2 - px, y + bh / 2 - py);
       if (d > best) { best = d; bx = x; by = y; }
     }
