@@ -72,6 +72,20 @@ const CONFIG = {
     { icone: '✨', titulo: 'Hoje',
       texto: 'e olha a gente aqui. ficar do seu lado virou o meu lugar favorito. e pode acreditar: a melhor parte ainda nem chegou. 😏' },
   ],
+
+  // 💍 O PEDIDO (o grande final do site). A câmera dela liga (com permissão),
+  //    grava a reação, e as frases abaixo aparecem uma a uma antes da pergunta.
+  //    Edite à vontade — quanto mais a sua cara, melhor.
+  pedido: {
+    frases: [
+      'Stefhane…',
+      'respira fundo, gatinha. e olha pra câmera. 😄',
+      'desde a primeira mensagem, não passou um dia sem você. e eu não quero que passe.',
+      'eu rezo todo dia agradecendo a Deus por ter te colocado na minha vida.',
+      'então eu preciso te perguntar uma coisa…',
+    ],
+    pergunta: 'quer namorar comigo?',
+  },
 };
 /* ====================== fim dos ajustes ===================== */
 
@@ -854,3 +868,195 @@ addEventListener('click', (e) => {
 /* ---------- 13. Ano no rodapé ------------------------------ */
 const elAno = document.getElementById('ano');
 if (elAno) elAno.textContent = new Date().getFullYear();
+
+/* ---------- 14. O PEDIDO 💍 (câmera grava a reação) ---------
+   Fluxo: ela autoriza a câmera (o navegador SEMPRE pergunta — vira
+   parte da surpresa) → começa a gravar → frases aparecem uma a uma
+   → A PERGUNTA → ela diz SIM → festa + o vídeo da reação pronto
+   pra ela mandar pelo WhatsApp (Web Share) ou baixar.
+   Tudo roda no navegador dela; o vídeo não sai do aparelho sozinho.
+   ----------------------------------------------------------- */
+(function pedido() {
+  const teaser = document.getElementById('pedidoTeaser');
+  const palco  = document.getElementById('pedidoPalco');
+  const festa  = document.getElementById('pedidoFesta');
+  if (!teaser || !palco || !festa) return;
+
+  const btnLigar  = document.getElementById('pedidoLigarCam');
+  const btnSem    = document.getElementById('pedidoSemCam');
+  const aviso     = document.getElementById('pedidoAviso');
+  const camBox    = document.getElementById('pedidoCam');
+  const video     = document.getElementById('pedidoVideo');
+  const recBadge  = document.getElementById('pedidoRec');
+  const fraseEl   = document.getElementById('pedidoFrase');
+  const pergunta  = document.getElementById('pedidoPergunta');
+  const tituloPer = document.getElementById('pedidoPerguntaTitulo');
+  const btnSim    = document.getElementById('pedidoSim');
+  const btnFoge   = document.getElementById('pedidoFoge');
+  const replay    = document.getElementById('pedidoReplay');
+  const playback  = document.getElementById('pedidoPlayback');
+  const btnEnviar = document.getElementById('pedidoEnviar');
+  const btnBaixar = document.getElementById('pedidoBaixar');
+
+  if (tituloPer && CONFIG.pedido && CONFIG.pedido.pergunta) tituloPer.textContent = CONFIG.pedido.pergunta;
+
+  let stream = null, recorder = null, chunks = [], blobFinal = null, timerId = null;
+
+  /* ---- câmera + gravação ---- */
+  async function ligarCamera() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return false;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: true, // o microfone pega a gargalhada — parte mais importante 😄
+      });
+    } catch { return false; }
+    video.srcObject = stream;
+    camBox.hidden = false;
+
+    if (window.MediaRecorder) {
+      // iPhone grava mp4; Android/desktop gravam webm — testamos na ordem
+      const tipos = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4',
+                     'video/webm;codecs=vp9,opus', 'video/webm'];
+      const mime = tipos.find((t) => MediaRecorder.isTypeSupported(t)) || '';
+      try {
+        recorder = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+        recorder.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+        recorder.start(1000); // chunks de 1s = não perde nada se algo falhar no meio
+        const t0 = Date.now();
+        const rel = recBadge.querySelector('b');
+        timerId = setInterval(() => {
+          const s = Math.floor((Date.now() - t0) / 1000);
+          if (rel) rel.textContent = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+        }, 500);
+        setTimeout(() => pararGravacao(), 4 * 60 * 1000); // teto de segurança: 4 min
+      } catch { recorder = null; }
+    }
+    if (!recorder) recBadge.hidden = true;
+    return true;
+  }
+
+  function encerrarStream() {
+    clearInterval(timerId);
+    if (stream) { stream.getTracks().forEach((t) => t.stop()); stream = null; }
+  }
+
+  function pararGravacao() {
+    if (!recorder || recorder.state === 'inactive') { encerrarStream(); return; }
+    recorder.onstop = () => {
+      encerrarStream();
+      if (!chunks.length) return;
+      blobFinal = new Blob(chunks, { type: chunks[0].type || 'video/webm' });
+      playback.src = URL.createObjectURL(blobFinal);
+      replay.hidden = false;
+    };
+    recorder.stop();
+  }
+
+  /* ---- frases uma a uma, depois a pergunta ---- */
+  function rodarFrases(fim) {
+    const frases = (CONFIG.pedido && CONFIG.pedido.frases) || [];
+    let i = 0;
+    (function proxima() {
+      if (i >= frases.length) { fim(); return; }
+      fraseEl.textContent = frases[i++];
+      fraseEl.animate([
+        { opacity: 0, transform: 'translateY(16px)' },
+        { opacity: 1, transform: 'translateY(0)', offset: 0.2 },
+        { opacity: 1, transform: 'translateY(0)', offset: 0.82 },
+        { opacity: 0, transform: 'translateY(-12px)' },
+      ], { duration: 3200, easing: 'ease-in-out' }).onfinish = proxima;
+    })();
+  }
+
+  function mostrarPergunta() {
+    fraseEl.hidden = true;
+    pergunta.hidden = false;
+    pergunta.animate(
+      [{ opacity: 0, transform: 'scale(.55)' }, { opacity: 1, transform: 'scale(1)' }],
+      { duration: 750, easing: 'cubic-bezier(.34,1.56,.64,1)', fill: 'forwards' });
+    chuvaDeCoracoes(16);
+  }
+
+  /* ---- botão que foge (3 tentativas e ele se entrega) ---- */
+  let fugas = 0, ultimaFuga = 0;
+  function fugir(e) {
+    if (fugas >= 3) return;
+    if (e && e.cancelable) e.preventDefault();
+    // no celular pointerenter+touchstart disparam juntos — conta 1 fuga só
+    if (Date.now() - ultimaFuga < 250) return;
+    ultimaFuga = Date.now();
+    fugas++;
+    const dx = Math.round(Math.random() * 170 - 85);
+    const dy = Math.round(Math.random() * 90 - 45);
+    btnFoge.style.transform = `translate(${dx}px, ${dy}px) rotate(${Math.round(Math.random() * 12 - 6)}deg)`;
+    if (fugas === 3) setTimeout(() => {
+      btnFoge.textContent = 'tá bom, você venceu: SIM!!! 😂';
+      btnFoge.style.transform = '';
+    }, 380);
+  }
+  btnFoge.addEventListener('pointerenter', fugir);
+  btnFoge.addEventListener('touchstart', fugir, { passive: false });
+  btnFoge.addEventListener('click', (e) => { if (fugas >= 3) disseSim(); else fugir(e); });
+
+  /* ---- ELA DISSE SIM ---- */
+  let respondeu = false;
+  function disseSim() {
+    if (respondeu) return; respondeu = true;
+    chuvaDeCoracoes(60);
+    setTimeout(() => chuvaDeCoracoes(44), 650);
+    setTimeout(() => chuvaDeCoracoes(44), 1400);
+    palco.hidden = true;
+    festa.hidden = false;
+    festa.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // grava mais 5s — é aí que vem o gritinho/a gargalhada 😄
+    if (recorder && recorder.state !== 'inactive') setTimeout(pararGravacao, 5000);
+    else encerrarStream();
+  }
+  btnSim.addEventListener('click', disseSim);
+
+  /* ---- mandar pra ele / baixar ---- */
+  function nomeArquivo() {
+    return 'ela-disse-sim.' + ((blobFinal && blobFinal.type.includes('mp4')) ? 'mp4' : 'webm');
+  }
+  btnBaixar.addEventListener('click', () => {
+    if (!blobFinal) return;
+    const a = document.createElement('a');
+    a.href = playback.src; a.download = nomeArquivo();
+    document.body.appendChild(a); a.click(); a.remove();
+  });
+  btnEnviar.addEventListener('click', async () => {
+    if (!blobFinal) return;
+    const file = new File([blobFinal], nomeArquivo(), { type: blobFinal.type || 'video/webm' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try { await navigator.share({ files: [file], title: 'minha reação 💍' }); return; }
+      catch { /* ela cancelou o compartilhar — sem problema */ }
+    } else {
+      btnBaixar.click(); // desktop sem Web Share: baixa e ela manda no WhatsApp
+    }
+  });
+
+  /* ---- início do fluxo ---- */
+  let comecou = false;
+  async function comecar(comCamera) {
+    if (comecou) return; comecou = true;
+    btnLigar.disabled = btnSem.disabled = true;
+    let ok = false;
+    if (comCamera) {
+      btnLigar.textContent = 'ligando… ✨';
+      ok = await ligarCamera();
+      if (!ok) {
+        aviso.hidden = false;
+        aviso.textContent = 'não consegui ligar a câmera 😅 mas vem assim mesmo, que a pergunta não muda…';
+      }
+    }
+    setTimeout(() => {
+      teaser.hidden = true;
+      palco.hidden = false;
+      palco.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      rodarFrases(mostrarPergunta);
+    }, ok ? 900 : (comCamera ? 1600 : 250));
+  }
+  btnLigar.addEventListener('click', () => comecar(true));
+  btnSem.addEventListener('click', () => comecar(false));
+})();
