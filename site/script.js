@@ -980,19 +980,36 @@ if (elAno) elAno.textContent = new Date().getFullYear();
     chuvaDeCoracoes(16);
   }
 
-  /* ---- botão que foge (3 fugas → vai pra lixeira) ---- */
+  /* ---- botão que foge (3 cliques → vai pra lixeira) ----
+     Conta CLIQUE de verdade (pointerdown), não o hover. Assim cada
+     toque nele = 1 fuga, exatamente 3, igual em qualquer aparelho. */
   const MAX_FUGAS = 3;
-  let fugas = 0, ultimaFuga = 0, naLixeira = false;
+  let fugas = 0, ultimaFuga = 0, naLixeira = false, fixado = false;
+
+  function fixarBotao() {
+    // troca pra posição fixa preservando o lugar atual (pro 1º deslize ser suave)
+    const r0 = btnFoge.getBoundingClientRect();
+    btnFoge.style.width = r0.width + 'px';
+    btnFoge.style.position = 'fixed';
+    btnFoge.style.margin = '0';
+    btnFoge.style.zIndex = '9600';
+    btnFoge.style.left = r0.left + 'px';
+    btnFoge.style.top = r0.top + 'px';
+    void btnFoge.offsetWidth; // força reflow pra transição pegar o 1º movimento
+    fixado = true;
+  }
+
   function fugir(e) {
     if (naLixeira) return;
     if (e && e.cancelable) e.preventDefault();
-    // pointerenter + touchstart podem disparar juntos no mesmo gesto —
-    // janela de 450ms garante que cada "tentativa" conte só 1 vez
-    if (Date.now() - ultimaFuga < 450) return;
+    if (Date.now() - ultimaFuga < 250) return; // anti duplo-disparo
     ultimaFuga = Date.now();
     fugas++;
 
-    // posição do dedo/cursor → desliza pro ponto MAIS LONGE possível na tela
+    if (fugas >= MAX_FUGAS) { irPraLixeira(); return; }
+    if (!fixado) fixarBotao();
+
+    // desliza pro ponto MAIS LONGE possível do dedo/cursor
     const px = (e && e.clientX) || innerWidth / 2;
     const py = (e && e.clientY) || innerHeight / 2;
     const r = btnFoge.getBoundingClientRect();
@@ -1004,46 +1021,42 @@ if (elAno) elAno.textContent = new Date().getFullYear();
       const d = Math.hypot(x + bw / 2 - px, y + bh / 2 - py);
       if (d > best) { best = d; bx = x; by = y; }
     }
-    btnFoge.style.position = 'fixed';
-    btnFoge.style.zIndex = '9600';
-    btnFoge.style.margin = '0';
     btnFoge.style.left = bx + 'px';
     btnFoge.style.top = by + 'px';
     btnFoge.style.transform = `rotate(${Math.round(Math.random() * 10 - 5)}deg)`;
 
     if (fugas === 1) btnFoge.textContent = 'ué… 🙈';
     else if (fugas === 2) btnFoge.textContent = 'para! 😝';
-
-    if (fugas >= MAX_FUGAS) setTimeout(irPraLixeira, 450); // deixa o último deslize terminar
   }
-  btnFoge.addEventListener('pointerenter', fugir);
-  btnFoge.addEventListener('touchstart', fugir, { passive: false });
+  btnFoge.addEventListener('pointerdown', fugir);
 
   function irPraLixeira() {
     if (naLixeira) return;
     naLixeira = true;
+    if (!fixado) fixarBotao();
     btnFoge.style.pointerEvents = 'none';
+    btnFoge.textContent = 'tchau 👋';
 
-    // 1) a lixeira surge com um pop suave embaixo
+    // 1) a lixeira surge bem no meio, com um pop nítido
     lixeira.hidden = false;
     lixeira.animate([
-      { opacity: 0, transform: 'translateX(-50%) translateY(40px) scale(.3)' },
-      { opacity: 1, transform: 'translateX(-50%) translateY(-6px) scale(1.12)', offset: .7 },
+      { opacity: 0, transform: 'translateX(-50%) translateY(50px) scale(.2)' },
+      { opacity: 1, transform: 'translateX(-50%) translateY(-8px) scale(1.18)', offset: .65 },
       { opacity: 1, transform: 'translateX(-50%) translateY(0) scale(1)' },
-    ], { duration: 520, easing: 'cubic-bezier(.34,1.56,.64,1)', fill: 'forwards' });
+    ], { duration: 600, easing: 'cubic-bezier(.34,1.56,.64,1)', fill: 'forwards' });
 
-    const lr = lixeira.getBoundingClientRect();
-    const br = btnFoge.getBoundingClientRect();
-    const dx = (lr.left + lr.width / 2) - (br.left + br.width / 2);
-    const dy = (lr.top + lr.height * 0.12) - (br.top + br.height / 2);
-
-    // 2) depois da lixeira aparecer, o botão é "jogado fora": arco suave caindo dentro
+    // 2) depois da lixeira aparecer, o botão é jogado dentro num arco suave
     setTimeout(() => {
+      const lr = lixeira.getBoundingClientRect();
+      const br = btnFoge.getBoundingClientRect();
+      const dx = (lr.left + lr.width / 2) - (br.left + br.width / 2);
+      const dy = (lr.top + lr.height * 0.10) - (br.top + br.height / 2);
+      btnFoge.style.transition = 'none'; // a partir daqui quem manda é o animate
       btnFoge.animate([
         { transform: 'translate(0,0) rotate(0) scale(1)', opacity: 1 },
-        { transform: `translate(${dx * 0.5}px, ${dy - 150}px) rotate(160deg) scale(.82)`, opacity: 1, offset: 0.5 },
-        { transform: `translate(${dx}px, ${dy}px) rotate(380deg) scale(.1)`, opacity: 0 },
-      ], { duration: 1050, easing: 'cubic-bezier(.45,.05,.55,.95)', fill: 'forwards' }).onfinish = () => {
+        { transform: `translate(${dx * 0.5}px, ${dy - 150}px) rotate(150deg) scale(.85)`, opacity: 1, offset: 0.5 },
+        { transform: `translate(${dx}px, ${dy}px) rotate(360deg) scale(.08)`, opacity: 0 },
+      ], { duration: 1100, easing: 'cubic-bezier(.45,.05,.55,.95)', fill: 'forwards' }).onfinish = () => {
         btnFoge.remove();
         // 3) a lixeira "engole" — balança e solta um puffzinho de corações
         lixeira.animate([
@@ -1065,9 +1078,9 @@ if (elAno) elAno.textContent = new Date().getFullYear();
           btnSim.animate(
             [{ transform: 'scale(1)' }, { transform: 'scale(1.18)' }, { transform: 'scale(1)' }],
             { duration: 700, easing: 'ease-out' });
-        }, 1050);
+        }, 900);
       };
-    }, 360);
+    }, 520);
   }
 
   /* ---- ELA DISSE SIM ---- */

@@ -901,12 +901,13 @@ body.transicao .medalha-brilho::before { animation-play-state: paused; }
   -webkit-background-clip: text; background-clip: text; color: transparent; }
 .btn--sim { font-size: 1.15rem; padding: 17px 42px; animation: simPulsa 1.4s ease-in-out infinite; }
 @keyframes simPulsa { 50% { transform: scale(1.07); box-shadow: 0 14px 50px rgba(255, 77, 109, .65); } }
-#pedidoFoge { transition: left .5s cubic-bezier(.22, 1, .36, 1), top .5s cubic-bezier(.22, 1, .36, 1), transform .5s ease; }
+#pedidoFoge { touch-action: none;
+  transition: left .5s cubic-bezier(.22, 1, .36, 1), top .5s cubic-bezier(.22, 1, .36, 1), transform .5s ease; }
 
 /* lixeira pra onde o "deixa eu pensar" voa */
-.pedido__lixeira { position: fixed; left: 50%; bottom: 11vh; transform: translateX(-50%);
-  font-size: clamp(3rem, 12vw, 4.6rem); line-height: 1; z-index: 9590; pointer-events: none;
-  filter: drop-shadow(0 12px 22px rgba(0, 0, 0, .55)); }
+.pedido__lixeira { position: fixed; left: 50%; bottom: 22vh; transform: translateX(-50%);
+  font-size: clamp(3.6rem, 15vw, 5.6rem); line-height: 1; z-index: 9590; pointer-events: none;
+  filter: drop-shadow(0 14px 26px rgba(0, 0, 0, .6)); }
 
 /* depois da lixeira: só o SIM, centralizado e maior */
 .pedido__pergunta--soSim .pedido__botoes { justify-content: center; }
