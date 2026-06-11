@@ -37,12 +37,16 @@ const CONFIG = {
   //      artista = nome de quem canta.
   //      letra   = um trechinho da letra (aparece embaixo do disco).
   musicas: [
-    { arquivo: 'musica.mp3', titulo: 'A nossa música', artista: '', capa: '', letra: '' },
-    // exemplos pra você copiar quando adicionar mais:
-    // { arquivo: 'musicas/blue.mp3', titulo: 'Blue', artista: 'yung kai',
-    //   capa: 'capas/blue.jpg', letra: 'you remind me of the color blue' },
-    // { arquivo: 'musicas/outra.mp3', titulo: 'Outra música', artista: '',
-    //   capa: '', letra: '' },
+    { arquivo: 'musicas/TeVivo.mp3', titulo: 'Te Vivo', artista: 'Luan Santana',
+      capa: 'capas/TeVivo.jpg', letra: 'enquanto eu viver, te vivo' },
+    { arquivo: 'musicas/Fica.mp3', titulo: 'Fica', artista: 'Anavitória & Matheus e Kauan',
+      capa: 'capas/Fica.jpg', letra: 'fica, que o lado bom da vida é ter você por perto' },
+    { arquivo: 'musicas/AnjosCantam.mp3', titulo: 'Anjos Cantam', artista: 'Jão',
+      capa: 'capas/AnjosCantam.webp', letra: 'porque é tudo tão bonito quando você está' },
+    { arquivo: 'musicas/Cafecomleite.mp3', titulo: 'Café com Leite', artista: '',
+      capa: 'capas/Cafecomleite.png', letra: 'a gente combina como café com leite' },
+    { arquivo: 'musicas/CheiroDeMar.mp3', titulo: 'Cheiro de Mar', artista: '',
+      capa: 'capas/CheiroDeMar.jpg', letra: 'você tem o cheiro da minha paz' },
   ],
 
   // ✍️ Frase que "digita sozinha" na seção da história.
