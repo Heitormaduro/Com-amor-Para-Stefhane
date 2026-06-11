@@ -12,6 +12,9 @@
     document.documentElement.classList.add('anim');
     // ao recarregar, sempre voltar pro topo (hero) — não restaurar a rolagem antiga
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    // tira o #ancora da URL (senão o navegador pula pra seção no reload)
+    if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+    addEventListener('DOMContentLoaded', function () { scrollTo(0, 0); });
     addEventListener('load', function () { scrollTo(0, 0); });
   </script>
 
