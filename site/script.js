@@ -7,7 +7,7 @@
    ========================================================== */
 const CONFIG = {
   // 📅 Primeira mensagem (estimado pelo foguinho do TikTok). Troque se souber a data certa.
-  primeiraMensagem: '2025-11-13 20:00',
+  primeiraMensagem: '2025-10-07 00:00',
 
   // 🎵 Música: coloque o arquivo em site/musica.mp3 (já ativado).
   temMusica: true,
