@@ -43,9 +43,9 @@ const CONFIG = {
       capa: 'capas/Fica.jpg', letra: 'fica, que o lado bom da vida é ter você por perto' },
     { arquivo: 'musicas/AnjosCantam.mp3', titulo: 'Anjos Cantam', artista: 'Jão',
       capa: 'capas/AnjosCantam.webp', letra: 'porque é tudo tão bonito quando você está' },
-    { arquivo: 'musicas/Cafecomleite.mp3', titulo: 'Café com Leite', artista: '',
+    { arquivo: 'musicas/Cafecomleite.mp3', titulo: 'Café com Leite', artista: 'Luan Santana',
       capa: 'capas/Cafecomleite.png', letra: 'a gente combina como café com leite' },
-    { arquivo: 'musicas/CheiroDeMar.mp3', titulo: 'Cheiro de Mar', artista: '',
+    { arquivo: 'musicas/CheiroDeMar.mp3', titulo: 'Cheiro de Mar', artista: 'José Jr.',
       capa: 'capas/CheiroDeMar.jpg', letra: 'você tem o cheiro da minha paz' },
   ],
 
