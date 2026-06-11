@@ -525,18 +525,36 @@ body.transicao .medalha-brilho::before { animation-play-state: paused; }
 }
 
 .marco__card {
-  margin: 26px auto 0; max-width: 520px;
-  padding: 22px 26px; position: relative; text-align: left;
-  opacity: 0; transform: translateY(16px); transition: opacity .35s, transform .35s;
+  margin: 26px auto 0; max-width: 540px;
+  padding: 26px 30px 28px; position: relative; text-align: left; overflow: hidden;
+  opacity: 0; transform: translateY(16px) scale(.97); transition: opacity .35s, transform .4s cubic-bezier(.2,.8,.2,1);
 }
-.marco__card.aberto { opacity: 1; transform: translateY(0); }
+.marco__card.aberto { opacity: 1; transform: translateY(0) scale(1); }
+/* barra de destaque na lateral */
+.marco__card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+  background: linear-gradient(180deg, var(--rosa-claro), var(--vermelho));
+}
+/* coração marca d'água no canto */
+.marco__card::after {
+  content: '♥'; position: absolute; right: 6px; bottom: -26px;
+  font-size: 8rem; line-height: 1; color: rgba(255,77,109,.07); pointer-events: none;
+}
+/* seloezinho com o ícone do marco */
+.marco__selo {
+  display: inline-grid; place-items: center; width: 46px; height: 46px;
+  border-radius: 50%; font-size: 1.45rem; margin-bottom: 14px; position: relative; z-index: 1;
+  background: linear-gradient(160deg, rgba(255,143,163,.32), rgba(224,22,63,.22));
+  border: 1px solid rgba(255,143,163,.45);
+  box-shadow: 0 6px 18px rgba(255,77,109,.3), inset 0 1px 0 rgba(255,255,255,.25);
+}
 .marco__fechar { position: absolute; top: 8px; right: 14px; background: none; border: none;
   color: var(--texto-suave); font-size: 1.5rem; cursor: pointer; line-height: 1; padding: 4px 8px; }
 .marco__fechar:hover { color: var(--texto); }
 .marco__data { color: var(--rosa-claro); font-size: .8rem; text-transform: uppercase;
-  letter-spacing: 1.8px; margin-bottom: 10px; font-weight: 500; }
-.marco__texto { font-family: var(--f-script); font-size: clamp(1.3rem, 3vw, 1.7rem);
-  color: var(--texto); line-height: 1.3; }
+  letter-spacing: 1.8px; margin-bottom: 10px; font-weight: 500; position: relative; z-index: 1; }
+.marco__texto { font-family: var(--f-script); font-size: clamp(1.35rem, 3vw, 1.75rem);
+  color: var(--texto); line-height: 1.32; position: relative; z-index: 1; }
 
 /* ========================= GALERIA ========================== */
 /* o conteúdo do site precisa flutuar ACIMA das fotos do fundo */

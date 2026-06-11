@@ -43,16 +43,16 @@ const CONFIG = {
   // 📌 Marcos da linha do tempo (a Stefhane toca em cada um pra abrir um cardzinho).
   //    Pode editar à vontade — frases que tenham a ver com vocês ficam mais fortes.
   marcos: [
-    { titulo: 'A primeira mensagem',
-      texto: '13 de novembro. eu mandei uma. só uma. e a gente não parou mais — nem um dia.' },
-    { titulo: 'O foguinho começou',
-      texto: 'em uma semana a gente já tinha aceso o foguinho do TikTok. e ele nunca apagou. 🔥' },
-    { titulo: '1 mês',
-      texto: 'um mês conversando todo dia, sem perder nenhum. ai eu já sabia que era diferente.' },
-    { titulo: '100 dias',
-      texto: '100 dias sem perder um. três meses pensando "que sorte eu ter te encontrado".' },
-    { titulo: 'Hoje',
-      texto: 'e aqui a gente tá. com plano, com aliança guardada. olha — a melhor parte ainda nem começou. 😏' },
+    { icone: '💬', titulo: 'Onde começou',
+      texto: '07 de outubro. mandei uma mensagem meio na sorte, sem esperar muita coisa. você respondeu, e sei lá, a gente simplesmente não parou mais.' },
+    { icone: '🔥', titulo: 'O foguinho',
+      texto: 'em uma semana o foguinho do TikTok já tava aceso. era bobo, mas virou a minha desculpa pra te chamar todo dia. e nunca mais apagou.' },
+    { icone: '🤍', titulo: 'Primeiro mês',
+      texto: 'com um mês eu já tinha apelido pra você e você pra mim. a gente conversava como se fosse de anos. foi ali que eu percebi que era diferente.' },
+    { icone: '💯', titulo: '100 dias',
+      texto: 'cem dias sem perder nenhum. todo dia a primeira coisa que eu queria era te dar bom dia. nem acredito que já faz tanto tempo.' },
+    { icone: '✨', titulo: 'Hoje',
+      texto: 'e olha a gente aqui. ficar do seu lado virou o meu lugar favorito. e pode acreditar: a melhor parte ainda nem chegou. 😏' },
   ],
 };
 /* ====================== fim dos ajustes ===================== */
@@ -492,6 +492,7 @@ document.addEventListener('DOMContentLoaded', revealsNoScroll);
     aberto = i;
     cardEl.innerHTML = `
       <button class="marco__fechar" type="button" aria-label="Fechar">×</button>
+      <span class="marco__selo">${d.icone || '💗'}</span>
       <p class="marco__data">${d.titulo}</p>
       <p class="marco__texto">${d.texto}</p>
     `;
