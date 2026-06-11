@@ -370,7 +370,7 @@ body.transicao .medalha-brilho::before { animation-play-state: paused; }
 
 /* retrato circular da Stefhane no lugar do buquê (moldura glossy + brilho) */
 .arte__retrato {
-  width: clamp(250px, 56vw, 360px); aspect-ratio: 1; margin: 0;
+  width: clamp(290px, 66vw, 440px); aspect-ratio: 1; margin: 0;
   position: relative; display: grid; place-items: center;
 }
 .retrato__moldura {
