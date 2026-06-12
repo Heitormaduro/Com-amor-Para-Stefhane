@@ -918,6 +918,7 @@ if (elAno) elAno.textContent = new Date().getFullYear();
   if (tituloPer && CONFIG.pedido && CONFIG.pedido.pergunta) tituloPer.textContent = CONFIG.pedido.pergunta;
 
   let stream = null, recorder = null, chunks = [], blobFinal = null, timerId = null;
+  let audioCtx = null, musicaNode = null;   // mixer: microfone + música de fundo
 
   /* ---- câmera + gravação ---- */
   async function ligarCamera() {
@@ -931,13 +932,40 @@ if (elAno) elAno.textContent = new Date().getFullYear();
     video.srcObject = stream;
     camBox.hidden = false;
 
+    // mistura a MÚSICA DE FUNDO (no ponto exato em que está tocando) + o
+    // microfone, pra reação dela ficar gravada com a trilha junto.
+    let streamGravar = stream;
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      const audioFundo = document.getElementById('audioFundo');
+      if (AC && audioFundo && audioFundo.src && !musicaNode) {
+        audioCtx = new AC();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const dest = audioCtx.createMediaStreamDestination();
+        // microfone (a gargalhada/gritinho dela — o mais importante) em volume cheio
+        if (stream.getAudioTracks().length) {
+          audioCtx.createMediaStreamSource(stream).connect(dest);
+        }
+        // música: um tiquinho mais baixa na gravação pra não cobrir a voz dela
+        musicaNode = audioCtx.createMediaElementSource(audioFundo);
+        const gMus = audioCtx.createGain();
+        gMus.gain.value = 0.6;
+        musicaNode.connect(gMus); gMus.connect(dest);
+        musicaNode.connect(audioCtx.destination); // continua tocando no alto-falante
+        streamGravar = new MediaStream([
+          ...stream.getVideoTracks(),
+          ...dest.stream.getAudioTracks(),
+        ]);
+      }
+    } catch { streamGravar = stream; }
+
     if (window.MediaRecorder) {
       // iPhone grava mp4; Android/desktop gravam webm — testamos na ordem
       const tipos = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4',
                      'video/webm;codecs=vp9,opus', 'video/webm'];
       const mime = tipos.find((t) => MediaRecorder.isTypeSupported(t)) || '';
       try {
-        recorder = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+        recorder = new MediaRecorder(streamGravar, mime ? { mimeType: mime } : undefined);
         recorder.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
         recorder.start(1000); // chunks de 1s = não perde nada se algo falhar no meio
         const t0 = Date.now();
