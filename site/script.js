@@ -430,6 +430,30 @@ if (!temGsap) document.documentElement.classList.remove('anim');
 })();
 
 /* ---------- 2. Animações de entrada (GSAP) ----------------- */
+/* ---------- Rolagem suave (animada na mão, sem teleporte) ----------
+   Centraliza um elemento na tela com easing garantido. Desliga o
+   scroll-behavior do CSS durante a animação pra não brigar com o JS. */
+function scrollSuavePara(el, dur = 850) {
+  if (!el) return;
+  const html = document.documentElement;
+  const prev = html.style.scrollBehavior;
+  html.style.scrollBehavior = 'auto';
+  const rect = el.getBoundingClientRect();
+  const alvo = scrollY + rect.top + rect.height / 2 - innerHeight / 2;
+  const max = Math.max(0, html.scrollHeight - innerHeight);
+  const destino = Math.max(0, Math.min(alvo, max));
+  const inicio = scrollY, dist = destino - inicio;
+  if (Math.abs(dist) < 2) { html.style.scrollBehavior = prev; return; }
+  const t0 = performance.now();
+  (function passo(ts) {
+    const p = Math.min(1, (ts - t0) / dur);
+    const e = 1 - Math.pow(1 - p, 3); // easeOutCubic — desce e desacelera macio
+    scrollTo(0, inicio + dist * e);
+    if (p < 1) requestAnimationFrame(passo);
+    else html.style.scrollBehavior = prev;
+  })(performance.now());
+}
+
 function introHero() {
   scrollTo(0, 0); // o hero sempre aparece do topo
   if (!temGsap || semMov) return;
@@ -979,7 +1003,7 @@ if (elAno) elAno.textContent = new Date().getFullYear();
       [{ opacity: 0, transform: 'scale(.55)' }, { opacity: 1, transform: 'scale(1)' }],
       { duration: 750, easing: 'cubic-bezier(.34,1.56,.64,1)', fill: 'forwards' });
     // desce a página pra centralizar a pergunta (melhor visualização)
-    requestAnimationFrame(() => pergunta.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+    requestAnimationFrame(() => scrollSuavePara(pergunta));
     chuvaDeCoracoes(16);
   }
 
@@ -1102,7 +1126,7 @@ if (elAno) elAno.textContent = new Date().getFullYear();
     setTimeout(() => chuvaDeCoracoes(44), 1400);
     palco.hidden = true;
     festa.hidden = false;
-    festa.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    scrollSuavePara(festa);
     // grava mais 5s — é aí que vem o gritinho/a gargalhada 😄
     if (recorder && recorder.state !== 'inactive') setTimeout(pararGravacao, 5000);
     else encerrarStream();
@@ -1147,7 +1171,7 @@ if (elAno) elAno.textContent = new Date().getFullYear();
     setTimeout(() => {
       teaser.hidden = true;
       palco.hidden = false;
-      palco.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      scrollSuavePara(palco);
       rodarFrases(mostrarPergunta);
     }, ok ? 900 : (comCamera ? 1600 : 250));
   }
