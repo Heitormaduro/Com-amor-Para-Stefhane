@@ -47,6 +47,10 @@ const CONFIG = {
       capa: 'capas/Cafecomleite.png', letra: 'a gente combina como café com leite' },
     { arquivo: 'musicas/CheiroDeMar.mp3', titulo: 'Cheiro de Mar', artista: 'José Jr.',
       capa: 'capas/CheiroDeMar.jpg', letra: 'você tem o cheiro da minha paz' },
+    { arquivo: 'musicas/ComVocê.mp3', titulo: 'Com Você',
+      capa: 'capas/ComVocê.jpg' },
+    { arquivo: 'musicas/LogoEu.mp3', titulo: 'Logo Eu',
+      capa: 'capas/LogoEu.jpg' },
   ],
 
   // ✍️ Frase que "digita sozinha" na seção da história.
