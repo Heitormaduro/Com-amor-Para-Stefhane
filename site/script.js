@@ -6,8 +6,8 @@
    Tudo que você provavelmente vai querer mudar está nesse bloco.
    ========================================================== */
 const CONFIG = {
-  // 📅 Primeira mensagem (estimado pelo foguinho do TikTok). Troque se souber a data certa.
-  primeiraMensagem: '2025-10-07 00:00',
+  // 📅 Primeira mensagem (a cantada). Alimenta o contador "a gente conversa há…".
+  primeiraMensagem: '2025-10-03 00:00',
 
   // 🎵 Música: coloque o arquivo em site/musica.mp3 (já ativado).
   temMusica: true,
@@ -61,16 +61,16 @@ const CONFIG = {
   // 📌 Marcos da linha do tempo (a Stefhane toca em cada um pra abrir um cardzinho).
   //    Pode editar à vontade — frases que tenham a ver com vocês ficam mais fortes.
   marcos: [
-    { icone: '💬', titulo: 'Onde começou',
-      texto: '07 de outubro. mandei uma mensagem meio na sorte, sem esperar muita coisa. você respondeu, e sei lá, a gente simplesmente não parou mais.' },
-    { icone: '🔥', titulo: 'O foguinho',
-      texto: 'em uma semana o foguinho do TikTok já tava aceso. era bobo, mas virou a minha desculpa pra te chamar todo dia. e nunca mais apagou.' },
-    { icone: '🤍', titulo: 'Primeiro mês',
-      texto: 'com um mês eu já tinha apelido pra você e você pra mim. a gente conversava como se fosse de anos. foi ali que eu percebi que era diferente.' },
-    { icone: '💯', titulo: '100 dias',
-      texto: 'cem dias sem perder nenhum. todo dia a primeira coisa que eu queria era te dar bom dia. nem acredito que já faz tanto tempo.' },
+    { icone: '💬', titulo: 'A primeira mensagem',
+      texto: '03 de outubro. eu vi a sua foto e mandei aquela cantada descarada — perguntando do "efeito de ficar mexendo na foto". você riu, respondeu… e a gente não parou mais desde então.' },
+    { icone: '👀', titulo: 'A primeira vez que te vi',
+      texto: '23 de outubro. te vi pessoalmente pela primeira vez, na casa da nossa amiga. ao vivo você era ainda melhor do que eu imaginava — ali eu já sabia que tava perdidinho.' },
+    { icone: '💋', titulo: 'O nosso primeiro beijo',
+      texto: '06 de março. depois de tanta conversa e tanta espera, enfim esse beijo. valeu cada segundo da espera — eu viveria tudo de novo só por aquele momento.' },
+    { icone: '🥰', titulo: 'O primeiro "te amo"',
+      texto: '1º de abril. eu te falei que te amava e você quase achou que era brincadeira de primeiro de abril kkk. mas não era — era a coisa mais verdadeira que eu já disse. e continua sendo.' },
     { icone: '✨', titulo: 'Hoje',
-      texto: 'e olha a gente aqui. ficar do seu lado virou o meu lugar favorito. e pode acreditar: a melhor parte ainda nem chegou. 😏' },
+      texto: 'e olha a gente aqui. ficar do seu lado virou o meu lugar favorito no mundo. e pode acreditar: a melhor parte ainda nem chegou. 😏' },
   ],
 
   // 💍 O PEDIDO (o grande final do site). A câmera dela liga (com permissão),
