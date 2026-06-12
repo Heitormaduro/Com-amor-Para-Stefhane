@@ -978,6 +978,8 @@ if (elAno) elAno.textContent = new Date().getFullYear();
     pergunta.animate(
       [{ opacity: 0, transform: 'scale(.55)' }, { opacity: 1, transform: 'scale(1)' }],
       { duration: 750, easing: 'cubic-bezier(.34,1.56,.64,1)', fill: 'forwards' });
+    // desce a página pra centralizar a pergunta (melhor visualização)
+    requestAnimationFrame(() => pergunta.scrollIntoView({ behavior: 'smooth', block: 'center' }));
     chuvaDeCoracoes(16);
   }
 
