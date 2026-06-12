@@ -42,15 +42,15 @@ const CONFIG = {
     { arquivo: 'musicas/Fica.mp3', titulo: 'Fica', artista: 'Anavitória & Matheus e Kauan',
       capa: 'capas/Fica.jpg', letra: 'fica, que o lado bom da vida é ter você por perto' },
     { arquivo: 'musicas/AnjosCantam.mp3', titulo: 'Anjos Cantam', artista: 'Jorge & Mateus',
-      capa: 'capas/AnjosCantam.webp', letra: 'porque é tudo tão bonito quando você está' },
+      capa: 'capas/AnjosCantam.webp', letra: 'os anjos cantam nosso amor' },
     { arquivo: 'musicas/Cafecomleite.mp3', titulo: 'Café com Leite', artista: 'Luan Santana',
       capa: 'capas/Cafecomleite.png', letra: 'a gente combina como café com leite' },
     { arquivo: 'musicas/CheiroDeMar.mp3', titulo: 'Cheiro de Mar', artista: 'José Jr.',
       capa: 'capas/CheiroDeMar.jpg', letra: 'você tem o cheiro da minha paz' },
     { arquivo: 'musicas/ComVocê.mp3', titulo: 'Com Você', artista: 'Jorge & Mateus',
-      capa: 'capas/ComVocê.jpg' },
+      capa: 'capas/ComVocê.jpg', letra: 'tô correndo um risco sério de viver pra sempre com você' },
     { arquivo: 'musicas/LogoEu.mp3', titulo: 'Logo Eu', artista: 'Jorge & Mateus',
-      capa: 'capas/LogoEu.jpg' },
+      capa: 'capas/LogoEu.jpg', letra: 'eu não imaginava te merecer' },
   ],
 
   // ✍️ Frase que "digita sozinha" na seção da história.
