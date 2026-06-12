@@ -575,6 +575,18 @@ body.transicao .medalha-brilho::before { animation-play-state: paused; }
 .cursor-pisca { animation: pisca 1s steps(2) infinite; color: var(--rosa); }
 @keyframes pisca { 50% { opacity: 0; } }
 
+/* a nossa primeira conversa (balõezinhos de mensagem) */
+.conversa { display: flex; flex-direction: column; gap: 9px; max-width: 460px; margin: 24px auto; }
+.conversa .msg { display: flex; }
+.conversa .msg p { margin: 0; padding: 11px 16px; border-radius: 18px; line-height: 1.4;
+  font-size: clamp(.92rem, 2.5vw, 1.04rem); max-width: 84%; text-align: left; }
+.msg--eu { justify-content: flex-end; }
+.msg--eu p { background: linear-gradient(135deg, var(--rosa), var(--vermelho)); color: #fff;
+  border-bottom-right-radius: 5px; box-shadow: 0 6px 18px rgba(255, 77, 109, .35); }
+.msg--ela { justify-content: flex-start; }
+.msg--ela p { background: rgba(255, 255, 255, .09); color: var(--texto);
+  border: 1px solid var(--vidro-bd); border-bottom-left-radius: 5px; }
+
 /* ======================== CONTADOR ========================== */
 .secao--contador { position: relative; overflow: hidden; }
 .secao__glow {
