@@ -496,6 +496,35 @@ document.addEventListener('DOMContentLoaded', revealsNoScroll);
     burger.addEventListener('click', () => nav.classList.toggle('aberto'));
     nav.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => nav.classList.remove('aberto')));
   }
+
+  // rolagem ANIMADA até a seção clicada (menu, logo, chevron) — sem teleporte
+  function irPara(el) {
+    const html = document.documentElement;
+    const prev = html.style.scrollBehavior;
+    html.style.scrollBehavior = 'auto'; // evita o smooth do CSS brigar com o JS
+    const off = (head ? head.offsetHeight : 0) + 14;
+    const destino = Math.max(0, scrollY + el.getBoundingClientRect().top - off);
+    const inicio = scrollY, dist = destino - inicio;
+    if (Math.abs(dist) < 2) { html.style.scrollBehavior = prev; return; }
+    const dur = Math.min(1100, Math.max(450, Math.abs(dist) * 0.5));
+    const t0 = performance.now();
+    (function passo(ts) {
+      const p = Math.min(1, (ts - t0) / dur);
+      const e = 1 - Math.pow(1 - p, 3); // easeOutCubic — desliza e desacelera
+      scrollTo(0, inicio + dist * e);
+      if (p < 1) requestAnimationFrame(passo);
+      else html.style.scrollBehavior = prev;
+    })(performance.now());
+  }
+  document.querySelectorAll('a[href^="#"]').forEach((a) => {
+    a.addEventListener('click', (ev) => {
+      const id = a.getAttribute('href').slice(1);
+      const alvo = id && document.getElementById(id);
+      if (!alvo) return;
+      ev.preventDefault();
+      irPara(alvo);
+    });
+  });
 })();
 
 /* ---------- 4. Cursor com brilho --------------------------- */
