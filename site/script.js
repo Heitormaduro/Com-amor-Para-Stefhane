@@ -1132,7 +1132,7 @@ if (elAno) elAno.textContent = new Date().getFullYear();
   let comecou = false;
   async function comecar(comCamera) {
     if (comecou) return; comecou = true;
-    btnLigar.disabled = btnSem.disabled = true;
+    btnLigar.disabled = true; if (btnSem) btnSem.disabled = true;
     let ok = false;
     if (comCamera) {
       btnLigar.textContent = 'ligando… ✨';
@@ -1150,5 +1150,5 @@ if (elAno) elAno.textContent = new Date().getFullYear();
     }, ok ? 900 : (comCamera ? 1600 : 250));
   }
   btnLigar.addEventListener('click', () => comecar(true));
-  btnSem.addEventListener('click', () => comecar(false));
+  if (btnSem) btnSem.addEventListener('click', () => comecar(false));
 })();
