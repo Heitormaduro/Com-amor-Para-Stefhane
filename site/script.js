@@ -61,15 +61,15 @@ const CONFIG = {
   // 📌 Marcos da linha do tempo (a Stefhane toca em cada um pra abrir um cardzinho).
   //    Pode editar à vontade — frases que tenham a ver com vocês ficam mais fortes.
   marcos: [
-    { icone: '💬', titulo: 'A primeira mensagem',
-      texto: '03 de outubro. eu vi a sua foto e mandei aquela cantada descarada — perguntando do "efeito de ficar mexendo na foto". você riu, respondeu… e a gente não parou mais desde então.' },
-    { icone: '👀', titulo: 'A primeira vez que te vi',
-      texto: '23 de outubro. te vi pessoalmente pela primeira vez, na casa da nossa amiga. ao vivo você era ainda melhor do que eu imaginava — ali eu já sabia que tava perdidinho.' },
-    { icone: '💋', titulo: 'O nosso primeiro beijo',
-      texto: '06 de março. depois de tanta conversa e tanta espera, enfim esse beijo. valeu cada segundo da espera — eu viveria tudo de novo só por aquele momento.' },
-    { icone: '🥰', titulo: 'O primeiro "te amo"',
-      texto: '1º de abril. eu te falei que te amava e você quase achou que era brincadeira de primeiro de abril kkk. mas não era — era a coisa mais verdadeira que eu já disse. e continua sendo.' },
-    { icone: '✨', titulo: 'Hoje',
+    { icone: '💬', data: '03 de outubro', titulo: 'A primeira mensagem',
+      texto: 'eu vi a sua foto e mandei aquela cantada descarada — perguntando do "efeito de ficar mexendo na foto". você riu, respondeu… e a gente não parou mais desde então.' },
+    { icone: '👀', data: '23 de outubro', titulo: 'A primeira vez que te vi',
+      texto: 'te vi pessoalmente pela primeira vez, na casa da nossa amiga. ao vivo você era ainda melhor do que eu imaginava — ali eu já sabia que tava perdidinho.' },
+    { icone: '💋', data: '06 de março', titulo: 'O nosso primeiro beijo',
+      texto: 'depois de tanta conversa e tanta espera, enfim esse beijo. valeu cada segundo da espera — eu viveria tudo de novo só por aquele momento.' },
+    { icone: '🥰', data: '1º de abril', titulo: 'O primeiro "te amo"',
+      texto: 'eu te falei que te amava e você quase achou que era brincadeira de primeiro de abril kkk. mas não era — era a coisa mais verdadeira que eu já disse. e continua sendo.' },
+    { icone: '✨', data: 'hoje', titulo: 'Agora', agora: true,
       texto: 'e olha a gente aqui. ficar do seu lado virou o meu lugar favorito no mundo. e pode acreditar: a melhor parte ainda nem chegou. 😏' },
   ],
 
@@ -651,34 +651,24 @@ document.addEventListener('DOMContentLoaded', revealsNoScroll);
   obs.observe(caixa);
 })();
 
-/* ---------- 9.5 Marcos interativos (linha do tempo) -------- */
-(function marcos() {
-  const botoes = document.querySelectorAll('.marco');
-  const cardEl = document.getElementById('marcoCard');
-  if (!botoes.length || !cardEl) return;
-
-  let aberto = -1;
-  function fechar() {
-    cardEl.classList.remove('aberto');
-    setTimeout(() => { cardEl.hidden = true; cardEl.innerHTML = ''; }, 320);
-    aberto = -1;
-  }
-  function abrir(i) {
-    const d = CONFIG.marcos[i];
-    if (!d) return;
-    if (aberto === i) { fechar(); return; }
-    aberto = i;
-    cardEl.innerHTML = `
-      <button class="marco__fechar" type="button" aria-label="Fechar">×</button>
-      <span class="marco__selo">${d.icone || '💗'}</span>
-      <p class="marco__data">${d.titulo}</p>
-      <p class="marco__texto">${d.texto}</p>
-    `;
-    cardEl.hidden = false;
-    requestAnimationFrame(() => cardEl.classList.add('aberto'));
-    cardEl.querySelector('.marco__fechar').addEventListener('click', fechar);
-  }
-  botoes.forEach((b, i) => b.addEventListener('click', () => abrir(i)));
+/* ---------- 9.5 Linha do tempo (vertical, cards alternados) -------- */
+(function linhaDoTempo() {
+  const cont = document.getElementById('linhaTempo');
+  if (!cont || !CONFIG.marcos) return;
+  CONFIG.marcos.forEach((m, i) => {
+    const lado = (i % 2) ? 'tl__item--dir' : 'tl__item--esq';
+    const item = document.createElement('article');
+    item.className = 'tl__item ' + lado + (m.agora ? ' tl__item--agora' : '');
+    item.setAttribute('data-anim', '');
+    item.innerHTML = `
+      <span class="tl__node">${m.icone || '💗'}</span>
+      <div class="tl__card vidro">
+        <span class="tl__data">${m.data || ''}</span>
+        <h3 class="tl__titulo">${m.titulo || ''}</h3>
+        <p class="tl__texto">${m.texto || ''}</p>
+      </div>`;
+    cont.appendChild(item);
+  });
 })();
 
 /* ---------- 10. Mural de polaroids + fotos no fundo ----------
